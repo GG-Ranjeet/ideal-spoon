@@ -13,7 +13,6 @@ from sqlalchemy.exc import IntegrityError
 from forms import CreatePostForm, LoginForm, RegisterForm, CommentForm
 import os
 import bleach
-from flask_migrate import Migrate
 
 
 '''
@@ -28,7 +27,6 @@ pip3 install -r requirements.txt
 
 This will install the packages from the requirements.txt for this project.
 '''
-from sqlalchemy import text
 
 
 app = Flask(__name__)
@@ -52,14 +50,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///post
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
-with app.app_context():
-    db.session.execute(
-        text("""
-        ALTER TABLE "user_table"
-        ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;
-        """)
-    )
-    db.session.commit()
 
 # CREATE TABLE IN DB
 class User(UserMixin, db.Model):
@@ -118,7 +108,7 @@ with app.app_context():
 def admin_only(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if current_user.id == 1:
+        if current_user.is_admin:
             return func(*args, **kwargs)
         else:
             abort(403, {"error_message": "Not authorised ."})
