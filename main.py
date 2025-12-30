@@ -13,6 +13,8 @@ from sqlalchemy.exc import IntegrityError
 from forms import CreatePostForm, LoginForm, RegisterForm, CommentForm
 import os
 import bleach
+from flask_migrate import Migrate
+
 
 '''
 Make sure the required packages are installed: 
@@ -26,6 +28,8 @@ pip3 install -r requirements.txt
 
 This will install the packages from the requirements.txt for this project.
 '''
+from sqlalchemy import text
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
@@ -44,8 +48,18 @@ def load_user(user_id):
 class Base(DeclarativeBase):
     pass
 app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
+# app.config['SQLALCHEMY_DATABASE_URI'] =  "sqlite:///posts.db"
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
+
+with app.app_context():
+    db.session.execute(
+        text("""
+        ALTER TABLE "user_table"
+        ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;
+        """)
+    )
+    db.session.commit()
 
 # CREATE TABLE IN DB
 class User(UserMixin, db.Model):
@@ -57,6 +71,8 @@ class User(UserMixin, db.Model):
 
     posts = relationship("BlogPost", back_populates="author")
     comments = relationship("Comment", back_populates="author")
+
+    is_admin = db.Column(db.Boolean, default=False)
 
 # CONFIGURE TABLES
 class BlogPost(db.Model):
