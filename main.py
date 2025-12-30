@@ -12,6 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
 from forms import CreatePostForm, LoginForm, RegisterForm, CommentForm
 import os
+import bleach
 
 '''
 Make sure the required packages are installed: 
@@ -42,7 +43,7 @@ def load_user(user_id):
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///posts.db")
+app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -84,6 +85,15 @@ class Comment(db.Model):
 
     author = relationship("User", back_populates="comments")
     posts = relationship("BlogPost", back_populates="comments")
+
+gravatar = Gravatar(app,
+                    size=100,
+                    rating='g',
+                    default='retro',
+                    force_default=False,
+                    force_lower=False,
+                    use_ssl=False,
+                    base_url=None)
 
 with app.app_context():
     db.create_all()
@@ -169,16 +179,19 @@ def show_post(post_id):
         if not current_user.is_authenticated:
             flash("You need to login or register to comment.")
             return redirect(url_for("login"))
-        comment = form.Comment.data
+        clean_text = bleach.clean(
+            form.comment.data,
+            tags=[],         
+            strip=True
+        )
         new_comment = Comment(
-            text = comment,
+            text = clean_text,
             author = current_user,
             posts = requested_post
         )
         db.session.add(new_comment)
         db.session.commit()
 
-    
     return render_template("post.html", post=requested_post, form=form)
 
 
