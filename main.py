@@ -42,16 +42,15 @@ login_manager.init_app(app)
 def load_user(user_id):
     return db.get_or_404(User,user_id)
 
-# CREATE DATABASE
+
 class Base(DeclarativeBase):
     pass
-# app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
-app.config['SQLALCHEMY_DATABASE_URI'] =  "sqlite:///posts.db"
+app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
+# app.config['SQLALCHEMY_DATABASE_URI'] =  "sqlite:///posts.db"
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
-
-# CREATE TABLE IN DB
+"""-----------------------------------CREATE TABLE IN DB----------------------------"""
 class User(UserMixin, db.Model):
     __tablename__ = "user_table"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -65,8 +64,6 @@ class User(UserMixin, db.Model):
     is_author = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False)
 
-
-# CONFIGURE TABLES
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -81,7 +78,6 @@ class BlogPost(db.Model):
     author = relationship("User", back_populates="posts")
     comments = relationship("Comment", back_populates="posts")
 
-
 class Comment(db.Model):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -93,6 +89,11 @@ class Comment(db.Model):
     author = relationship("User", back_populates="comments")
     posts = relationship("BlogPost", back_populates="comments")
 
+with app.app_context():
+    db.create_all()
+
+
+"""-----------------------------------AVATAR GEN----------------------------"""
 gravatar = Gravatar(app,
                     size=100,
                     rating='g',
@@ -102,11 +103,14 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None)
 
-with app.app_context():
-    db.create_all()
 
-#decorator admin only
+"""-----------------------------------DECORATORS----------------------------"""
 def admin_and_author_only(func):
+    '''
+    can only access if the user is logged in and if they are admin or author of the post
+    Example - Editing a post with a provided post_id
+    :param func: post_id
+    '''
     @wraps(func)
     def wrapper(*args, **kwargs):
         post_id = kwargs.get("post_id")
@@ -124,6 +128,11 @@ def admin_and_author_only(func):
     return wrapper
 
 def admin_or_author_only(func):
+    """
+    Accessible for admin and author only 
+    Example - Creating a post
+    :param func: None
+    """
     @wraps(func)
     def wrapper(*args, **kwargs):
         if current_user.is_admin or current_user.is_author:
@@ -132,6 +141,12 @@ def admin_or_author_only(func):
     return wrapper
 
 def admin_only(func):
+    """
+    Accessible for admin 
+    Example - Admin panel
+    
+    :param func: None
+    """
     @wraps(func)
     def wrapper(*args, **kwargs):
         if current_user.is_admin:
@@ -139,6 +154,7 @@ def admin_only(func):
         abort(403, description="Not authorised.")
     return wrapper
 
+"""-------------------------------------VIEWS-------------------------------"""
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -164,8 +180,6 @@ def register():
             return redirect(url_for('login', email = form.email.data))
     return render_template("register.html", form = form)
 
-
-# Retrieve a user from the database based on their email. 
 @app.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
@@ -186,13 +200,11 @@ def login():
             return redirect(url_for("get_all_posts"))            
     return render_template("login.html", form=form)
 
-
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('get_all_posts'))
-
 
 @app.route('/')
 def get_all_posts():
@@ -200,8 +212,6 @@ def get_all_posts():
     posts = result.scalars().all()
     return render_template("index.html", all_posts=posts)
 
-
-# TODO: Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 def show_post(post_id):
     requested_post = db.get_or_404(BlogPost, post_id)
@@ -225,8 +235,6 @@ def show_post(post_id):
 
     return render_template("post.html", post=requested_post, form=form)
 
-
-# TODO: Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 @login_required
 @admin_or_author_only
@@ -246,8 +254,6 @@ def add_new_post():
         return redirect(url_for("get_all_posts"))
     return render_template("make-post.html", form=form)
 
-
-# TODO: Use a decorator so only an admin user can edit a post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 @login_required
 @admin_and_author_only
@@ -270,8 +276,6 @@ def edit_post(post_id):
         return redirect(url_for("show_post", post_id=post.id))
     return render_template("make-post.html", form=edit_form, is_edit=True)
 
-
-# TODO: Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>")
 @login_required
 @admin_and_author_only
@@ -281,12 +285,9 @@ def delete_post(post_id):
     db.session.commit()
     return redirect(url_for('get_all_posts'))
 
-
 @app.route("/about")
 def about():
     return render_template("about.html")
-
-
 
 @app.route("/contact")
 def contact():
@@ -314,9 +315,11 @@ def admin_dashboard():
     total_users=len(users)
 )
 
+
+"""-----------------------------------ERROR HANDLER----------------------------"""
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"), 404
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)

@@ -1,5 +1,7 @@
 {% include "header.html" %}
-
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles2.css') }}" />
+{% endblock %}
 <!-- Page Header-->
 <header class="masthead" style="background-image: url('../static/assets/img/about-bg.jpg')">
   <div class="container position-relative px-4 px-lg-5">
@@ -18,14 +20,12 @@
   <div class="container px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="">
-        <div class="card shadow-sm" style="width: 18rem;">
-
-          <div class="front" style="background-image: url();">
+        <div class="card shadow-sm" style="width: 18rem">
+          <div class="front" style="background-image: url()">
             <p class="large">nothing</p>
           </div>
           <!-- Card Body -->
           <div class="back">
-
             <h5 class="card-title">
               This is Title
               <small class="text-muted">(This is date)</small>
@@ -38,55 +38,46 @@
 
             <p class="card-text fst-italic">"review"</p>
 
-            <p class="card-text">
-              description
-            </p>
+            <p class="card-text">description</p>
 
             <div class="d-flex gap-2">
               <a href="" class="btn btn-primary btn-sm">Update</a>
               <a href="" class="btn btn-danger btn-sm">Delete</a>
             </div>
-
           </div>
         </div>
 
         <div class="card">
+          <!-- FRONT -->
+          <div class="front" style="background-image: url('IMAGE_URL_HERE')">
+            <p class="large">Nothing</p>
+          </div>
 
-  <!-- FRONT -->
-  <div class="front" style="background-image: url('IMAGE_URL_HERE');">
-    <p class="large">Nothing</p>
-  </div>
+          <!-- BACK -->
+          <div class="back">
+            <div>
+              <div class="title">
+                This is Title
+                <span class="release_date">(This is date)</span>
+              </div>
 
-  <!-- BACK -->
-  <div class="back">
-    <div>
+              <div class="rating">
+                <label>Rating</label>
+                ★★★★☆
+              </div>
 
-      <div class="title">
-        This is Title
-        <span class="release_date">(This is date)</span>
-      </div>
+              <p class="review">"review"</p>
 
-      <div class="rating">
-        <label>Rating</label>
-        ★★★★☆
-      </div>
+              <p class="overview">description</p>
 
-      <p class="review">"review"</p>
+              <a href="#" class="button">Update</a>
+              <a href="#" class="button delete-button">Delete</a>
+            </div>
+          </div>
+        </div>
 
-      <p class="overview">
-        description
-      </p>
-
-      <a href="#" class="button">Update</a>
-      <a href="#" class="button delete-button">Delete</a>
-
-    </div>
-  </div>
-
-</div>
-
-        <div class="card" style="width: 18rem;">
-          <div class="front" style="background-image: url();">
+        <div class="card" style="width: 18rem">
+          <div class="front" style="background-image: url()">
             <p class="large">nothing</p>
           </div>
           <div class="back">
@@ -100,8 +91,7 @@
                 <i class="fas fa-star star"></i>
               </div>
               <p class="review">"review"</p>
-              <p class="overview">description
-              </p>
+              <p class="overview">description</p>
             </div>
           </div>
         </div>
