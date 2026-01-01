@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}All Posts - Between Semesters{% endblock %}
+
+{% block content %}
+
+<style>
+    .post-archive-card {
+        transition: transform 0.2s;
+        border-left: 5px solid transparent;
+    }
+
+    .post-archive-card:hover {
+        transform: translateX(5px);
+        border-left: 5px solid #0085a1;
+        /* Teal accent color */
+    }
+
+    .pagination-btn {
+        min-width: 140px;
+    }
+</style>
+
+<header class="masthead" style="background-image: url('../static/assets/img/home-bg.jpg')">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1>Blog Archive</h1>
+                    <span class="subheading">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="mb-4">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+
+                <div class="list-group list-group-flush">
+                    {% for post in pagination.items %}
+
+                    <a href="{{ url_for('show_post', post_id=post.id) }}"
+                        class="list-group-item list-group-item-action py-4 border-0 post-archive-card">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h2 class="mb-1 h4 fw-bold text-dark">{{ post.title }}</h2>
+                            <small class="text-muted text-nowrap ms-3">{{ post.date }}</small>
+                        </div>
+                        <h3 class="h6 fw-normal text-muted mb-2">{{ post.subtitle }}</h3>
+                        <div class="d-flex align-items-center mt-3">
+                            <img src="{{ post.author.email | gravatar(size=30) }}" class="rounded-circle me-2"
+                                alt="Avatar">
+                            <small class="text-muted">By {{ post.author.name }}</small>
+                        </div>
+                    </a>
+
+                    <hr class="my-0 opacity-25">
+                    {% else %}
+                    <div class="text-center py-5">
+                        <h4>No posts found.</h4>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-5">
+
+                    <div>
+                        {% if pagination.has_prev %}
+                        <a href="{{ url_for('show_all_posts', page=pagination.prev_num) }}"
+                            class="btn btn-primary text-uppercase pagination-btn">
+                            &larr; Newer Posts
+                        </a>
+                        {% else %}
+                        <button class="btn btn-outline-secondary text-uppercase pagination-btn" disabled>
+                            &larr; Newer Posts
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2"> {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1,
+                        left_current=1, right_current=2) %}
+                        {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <a href="{{ url_for('show_all_posts', page=page_num) }}" class="btn btn-primary btn-md fw-bold" style="padding: 0.7rem 1rem;
+                            font-size: 0.92rem;   
+                            line-height: 1.5;
+                            border-radius: 0.25rem;"
+                        >
+                            {{ page_num }}
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('show_all_posts', page=page_num) }}" class="btn btn-outline-dark btn-sm" style="padding: 0.7rem 1rem;
+                            font-size: 0.92rem;   
+                            line-height: 1.5;
+                            border-radius: 0.25rem;"
+                        >
+                            {{ page_num }}
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <span class="text-muted align-self-center">...</span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {% if pagination.has_next %}
+                        <a href="{{ url_for('show_all_posts', page=pagination.next_num) }}"
+                            class="btn btn-primary text-uppercase pagination-btn">
+                            Older Posts &rarr;
+                        </a>
+                        {% else %}
+                        <button class="btn btn-outline-secondary text-uppercase pagination-btn" disabled>
+                            Older Posts &rarr;
+                        </button>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock %}
