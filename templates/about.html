@@ -1,103 +1,113 @@
-{% include "header.html" %}
-{% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles2.css') }}" />
-{% endblock %}
-<!-- Page Header-->
+{% extends "base.html" %}
+
+{% block title %}About Us - Between Semesters{% endblock %}
+
+{% block content %}
+
+<style>
+    .team-card {
+        transition: transform 0.3s ease;
+        border: none;
+        background: transparent;
+    }
+    .team-card:hover {
+        transform: translateY(-5px);
+    }
+    .team-avatar {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .social-link {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        color: #333;
+        border-radius: 50%;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+    .social-link:hover {
+        background-color: #000;
+        color: #fff;
+    }
+</style>
+
 <header class="masthead" style="background-image: url('../static/assets/img/about-bg.jpg')">
   <div class="container position-relative px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
-        <div class="page-heading">
-          <h1>About Us</h1>
-          <span class="subheading">This is what I do.</span>
+        <div class="site-heading">
+          <h1>Meet the Team</h1>
+          <span class="subheading">The minds behind the blog.</span>
         </div>
       </div>
     </div>
   </div>
 </header>
-<!-- Main Content-->
 <main class="mb-4">
   <div class="container px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="">
-        <div class="card shadow-sm" style="width: 18rem">
-          <div class="front" style="background-image: url()">
-            <p class="large">nothing</p>
-          </div>
-          <!-- Card Body -->
-          <div class="back">
-            <h5 class="card-title">
-              This is Title
-              <small class="text-muted">(This is date)</small>
-            </h5>
+    
+    <div class="row gx-4 gx-lg-5 justify-content-center text-center mt-5">
+        
+        {% for admin in admins %}
+        <div class="col-lg-4 col-md-6 mb-5">
+            <div class="team-card h-100 p-4">
+                
+                <img src="{{ admin.email | gravatar(size=300) }}" alt="{{ admin.name }}" class="team-avatar">
+                
+                <h3 class="fw-bold">{{ admin.name }}</h3>
+                
+                <p class="text-primary fw-bold mb-3">Administrator</p>
+                
+                <p class="text-muted mb-4 px-lg-3">
+                    {% if admin.bio %}
+                        {{ admin.bio }}
+                    {% else %}
+                        No bio available yet.
+                    {% endif %}
+                </p>
+                
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="mailto:{{ admin.email }}" class="social-link" title="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
 
-            <p class="mb-1">
-              <strong>Rating:</strong>
-              <i class="fas fa-star text-warning"></i>
-            </p>
+                    {% if admin.github_url %}
+                    <a href="{{ admin.github_url }}" target="_blank" class="social-link" title="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    {% endif %}
 
-            <p class="card-text fst-italic">"review"</p>
+                    {% if admin.linkedin_url %}
+                    <a href="{{ admin.linkedin_url }}" target="_blank" class="social-link" title="LinkedIn">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('profile', user_id=admin.id) }}" class="social-link" title="View Profile">
+                        <i class="fas fa-user"></i>
+                    </a>
+                </div>
 
-            <p class="card-text">description</p>
+                {% if current_user.is_authenticated and current_user.id == admin.id %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('edit_profile') }}" class="btn btn-sm btn-outline-secondary">Edit My Info</a>
+                    </div>
+                {% endif %}
 
-            <div class="d-flex gap-2">
-              <a href="" class="btn btn-primary btn-sm">Update</a>
-              <a href="" class="btn btn-danger btn-sm">Delete</a>
             </div>
-          </div>
         </div>
+        {% endfor %}
 
-        <div class="card">
-          <!-- FRONT -->
-          <div class="front" style="background-image: url('IMAGE_URL_HERE')">
-            <p class="large">Nothing</p>
-          </div>
-
-          <!-- BACK -->
-          <div class="back">
-            <div>
-              <div class="title">
-                This is Title
-                <span class="release_date">(This is date)</span>
-              </div>
-
-              <div class="rating">
-                <label>Rating</label>
-                ★★★★☆
-              </div>
-
-              <p class="review">"review"</p>
-
-              <p class="overview">description</p>
-
-              <a href="#" class="button">Update</a>
-              <a href="#" class="button delete-button">Delete</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="width: 18rem">
-          <div class="front" style="background-image: url()">
-            <p class="large">nothing</p>
-          </div>
-          <div class="back">
-            <div>
-              <h5 class="card-title">
-                This is Title
-                <small class="text-muted">(This is date)</small>
-              </h5>
-              <div class="rating">
-                <label>Rating</label>
-                <i class="fas fa-star star"></i>
-              </div>
-              <p class="review">"review"</p>
-              <p class="overview">description</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </main>
-
-{% include "footer.html" %}
+{% endblock %}

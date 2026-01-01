@@ -1,73 +1,137 @@
-{% include "header.html" %}
+{% extends "base.html" %}
 
-<!-- Page Header-->
-<header
-  class="masthead"
-  style="background-image: url('../static/assets/img/home-bg.jpg')"
->
-  <div class="container position-relative px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="col-md-10 col-lg-8 col-xl-7">
-        <div class="site-heading">
-          <h1>Between Semesters Blog</h1>
-          <span class="subheading">A collection of random musings.</span>
+{% block title %}Home - Between Semesters{% endblock %}
+
+{% block content %}
+
+<style>
+    .post-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+    }
+    .post-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    .post-img-container {
+        min-height: 250px;
+        background-size: cover;
+        background-position: center;
+    }
+    .author-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: #f0f2f5;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        font-weight: bold;
+        color: #555;
+    }
+</style>
+
+<header class="masthead" style="background-image: url('../static/assets/img/home-bg.jpg')">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="site-heading">
+                    <h1>Between Semesters Blog</h1>
+                    <span class="subheading">A collection of random musings and code.</span>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </header>
-<!-- Main Content-->
-<div class="container px-4 px-lg-5">
-  <div class="row gx-4 gx-lg-5 justify-content-center">
-    <div class="col-md-10 col-lg-8 col-xl-7">
-      <!-- Post preview-->
-      {% for post in all_posts %}
-      <div class="post-preview">
-        <a href="{{ url_for('show_post', post_id=post.id) }}">
-          <h2 class="post-title">{{ post.title }}</h2>
-          <h3 class="post-subtitle">{{ post.subtitle }}</h3>
-        </a>
-        <p class="post-meta">
-          Posted by
-          <a href="#">{{post.author.name}}</a>
-          on {{post.date}}
-          <!-- TODO: Only show delete button if user id is 1 (admin user) -->
-          {% if current_user == post.author %}
-            <form
-              action="{{ url_for('delete_post', post_id=post.id) }}"
-              method="post"
-              class="d-inline" 
-              onsubmit="return confirm('Are you sure you want to delete this post?');">
-              <button type="submit" class="btn btn-outline-danger btn-sm">
-                Delete Post
-              </button>
-            </form>
-          {% endif %}
-        </p>
-      </div>
-      <!-- Divider-->
-      <hr class="my-4" />
-      {% endfor %}
 
-      <!-- New Post -->
-      <!-- TODO: Only show Create Post button if user id is 1 (admin user) -->
-      <div class="d-flex justify-content-end mb-4">
-        {% if current_user.is_admin or current_user.is_author %}
-        <a
-          class="btn btn-primary float-right"
-          href="{{url_for('add_new_post')}}"
-          >Create New Post</a
-        >
-        {% endif %}
-
-      </div>
-
-      <!-- Pager-->
-      <div class="d-flex justify-content-end mb-4">
-        <a class="btn btn-secondary text-uppercase" href="#!">Older Posts →</a>
-      </div>
+<div class="container px-4 px-lg-5 mb-5">
+    
+    {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_author) %}
+    <div class="row mb-4">
+        <div class="col-12 text-end">
+            <a class="btn btn-dark rounded-pill px-4" href="{{ url_for('add_new_post') }}">
+                <i class="fas fa-plus me-2"></i>Create New Post
+            </a>
+        </div>
     </div>
-  </div>
+    {% endif %}
+
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-lg-10">
+            
+            {% for post in all_posts %}
+            <div class="card mb-5 border-0 shadow-sm post-card">
+                <div class="row g-0 h-100">
+                    
+                    <div class="col-md-7 p-4 d-flex flex-column justify-content-center">
+                        <div class="card-body p-0">
+                            <a href="{{ url_for('show_post', post_id=post.id) }}" class="text-decoration-none text-dark">
+                                <h2 class="card-title fw-bold mb-2 h3">{{ post.title }}</h2>
+                                <h5 class="card-subtitle text-muted fw-light mb-3 h6">{{ post.subtitle }}</h5>
+                            </a>
+                            
+                            <p class="card-text text-secondary mb-4 small">
+                                {{ post.body|striptags|truncate(120) }}
+                            </p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <div class="d-flex align-items-center">
+                                    <div class="author-avatar">
+                                        <a href="{{ url_for('profile', user_id=post.author.id) }}">
+
+                                            <img src="{{ post.author.email | gravatar(size=40) }}" alt="Profile" class="rounded-circle"
+                                    width="36" height="36" />
+                                        </a>
+
+                                    </div>
+                                    <div class="small text-muted lh-1">
+                                        <a href="{{ url_for('profile', user_id=post.author.id) }}" class="fw-bold text-dark d-block">{{ post.author.name }}</a>
+                                        <span style="font-size: 0.8em;">{{ post.date }}</span>
+                                    </div>
+                                </div>
+
+                                {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
+                                <a href="{{ url_for('delete_post', post_id=post.id) }}" 
+                                   class="btn btn-outline-danger btn-sm border-0"
+                                   data-bs-toggle="tooltip" 
+                                   title="Delete Post"
+                                   onclick="return confirm('Are you sure you want to delete this post?');">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5 post-img-container d-none d-md-block" 
+                         style="background-image: url('{{ post.img_url }}');">
+                         <a href="{{ url_for('show_post', post_id=post.id) }}" class="d-block h-100 w-100"></a>
+                    </div>
+                    
+                    <div class="col-12 d-md-none">
+                        <img src="{{ post.img_url }}" class="img-fluid w-100" alt="{{ post.title }}" style="max-height: 200px; object-fit: cover;">
+                    </div>
+
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-pen-fancy fa-3x text-muted"></i>
+                </div>
+                <h3 class="text-muted">No posts yet.</h3>
+                <p>Be the first to share your story!</p>
+            </div>
+            {% endfor %}
+
+            <div class="d-flex justify-content-end mb-4">
+                <a class="btn btn-outline-secondary text-uppercase rounded-pill px-4" href="{{ url_for('show_all_posts') }}">Older Posts &rarr;</a>
+            </div>
+        </div>
+    </div>
 </div>
 
-{% include "footer.html" %}
+{% endblock %}

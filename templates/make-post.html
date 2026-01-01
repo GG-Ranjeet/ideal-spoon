@@ -1,23 +1,22 @@
-{% from "bootstrap5/form.html" import render_form %} {% block content %} {%
-include "header.html" %}
+{% extends "base.html" %}
 
-<!-- Page Header -->
-<header
-  class="masthead"
-  style="background-image: url('../static/assets/img/edit-bg.jpg')"
->
+{% block title %}
+{% if is_edit %}Edit Post{% else %}New Post{% endif %} - Between Semesters
+{% endblock %}
+
+{% block content %}
+<header class="masthead" style="background-image: url('../static/assets/img/edit-bg.jpg')">
   <div class="container position-relative px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
         <div class="page-heading">
-          {% if is_edit: %}
+          {% if is_edit %}
           <h1>Edit Post</h1>
-          {% else: %}
+          <span class="subheading">Refine your masterpiece.</span>
+          {% else %}
           <h1>New Post</h1>
+          <span class="subheading">Share your story with the world.</span>
           {% endif %}
-          <span class="subheading"
-            >You're going to make a great blog post!</span
-          >
         </div>
       </div>
     </div>
@@ -26,12 +25,71 @@ include "header.html" %}
 
 <main class="mb-4">
   <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-md-10 mx-auto">
-        {{ ckeditor.load() }} {{ ckeditor.config(name='body') }} {{
-        render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-12">
+
+        <div class="card shadow-lg border-0 rounded-lg">
+
+          <div class="card-header bg-white border-0 pt-4 px-5">
+            <h5 class="text-muted fw-light">Post Details</h5>
+            <hr>
+          </div>
+
+          <div class="card-body px-5 pb-5">
+
+            <form method="POST" novalidate>
+              {{ form.hidden_tag() }} <div class="form-floating mb-3">
+                {{ form.title(class="form-control", id="postTitle", placeholder="Enter title") }}
+                <label for="postTitle">Blog Post Title</label>
+                {% if form.title.errors %}
+                <span class="text-danger small">{{ form.title.errors[0] }}</span>
+                {% endif %}
+              </div>
+
+              <div class="form-floating mb-3">
+                {{ form.subtitle(class="form-control", id="postSubtitle", placeholder="Enter subtitle") }}
+                <label for="postSubtitle">Subtitle</label>
+                {% if form.subtitle.errors %}
+                <span class="text-danger small">{{ form.subtitle.errors[0] }}</span>
+                {% endif %}
+              </div>
+
+              <div class="form-floating mb-4">
+                {{ form.img_url(class="form-control", id="imgUrl", placeholder="https://...") }}
+                <label for="imgUrl">Background Image URL</label>
+                <div class="form-text text-muted small ms-1">Paste a URL for the header image (e.g., from Unsplash).
+                </div>
+                {% if form.img_url.errors %}
+                <span class="text-danger small">{{ form.img_url.errors[0] }}</span>
+                {% endif %}
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label fw-bold text-secondary">Post Content</label>
+                {{ form.body(class="form-control") }}
+                {% if form.body.errors %}
+                <span class="text-danger small">{{ form.body.errors[0] }}</span>
+                {% endif %}
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-5">
+                <a href="{{ url_for('get_all_posts') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+
+                <button type="submit" class="btn btn-primary px-5 fw-bold">
+                  {% if is_edit %}Save Changes{% else %}Publish Post{% endif %}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </main>
-{% include "footer.html" %} {% endblock %}
+
+{{ ckeditor.load() }}
+{{ ckeditor.config(name='body') }}
+
+{% endblock %}
