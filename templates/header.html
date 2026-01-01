@@ -38,6 +38,10 @@
       href="{{ url_for('static', filename='css/styles.css') }}"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/styles2.css') }}"
+    />
     {% endblock %}
   </head>
   <body>
@@ -105,6 +109,52 @@
                 >Contact</a
               >
             </li>
+{% if current_user.is_authenticated %}
+<li class="nav-item dropdown">
+  <a
+    href=""
+    class="nav-link d-flex align-items-center gap-2 py-0"
+    id="userDropdown"
+    role="button"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+    style="height: 100%;"
+  > 
+    <span class="lh-1">{{ current_user.name }}</span>
+    <img
+      src="{{ current_user.email | gravatar(size=40) }}"
+      alt="Profile"
+      class="rounded-circle"
+      width="36"
+      height="36"
+    />
+  </a>
+  <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+    <li>
+      <a class="dropdown-item" href="">
+        👤 Profile
+      </a>
+    </li>
+
+    {% if current_user.is_admin %}
+    <li>
+      <a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">
+        🛠 Admin Panel
+      </a>
+    </li>
+    {% endif %}
+
+    <li><hr class="dropdown-divider" /></li>
+
+    <li>
+      <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+        🚪 Logout
+      </a>
+    </li>
+  </ul>
+</li>
+{% endif %}
+
           </ul>
         </div>
       </div>

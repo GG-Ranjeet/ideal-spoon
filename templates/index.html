@@ -32,7 +32,7 @@
           <a href="#">{{post.author.name}}</a>
           on {{post.date}}
           <!-- TODO: Only show delete button if user id is 1 (admin user) -->
-          {% if current_user.is_admin %}
+          {% if current_user == post.author %}
             <form
               action="{{ url_for('delete_post', post_id=post.id) }}"
               method="post"
@@ -52,7 +52,7 @@
       <!-- New Post -->
       <!-- TODO: Only show Create Post button if user id is 1 (admin user) -->
       <div class="d-flex justify-content-end mb-4">
-        {% if current_user.is_admin %}
+        {% if current_user.is_admin or current_user.is_author %}
         <a
           class="btn btn-primary float-right"
           href="{{url_for('add_new_post')}}"

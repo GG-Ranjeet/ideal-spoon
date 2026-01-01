@@ -45,8 +45,8 @@ def load_user(user_id):
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
-# app.config['SQLALCHEMY_DATABASE_URI'] =  "sqlite:///posts.db"
+# app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
+app.config['SQLALCHEMY_DATABASE_URI'] =  "sqlite:///posts.db"
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -62,7 +62,9 @@ class User(UserMixin, db.Model):
     posts = relationship("BlogPost", back_populates="author")
     comments = relationship("Comment", back_populates="author")
 
+    is_author = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False)
+
 
 # CONFIGURE TABLES
 class BlogPost(db.Model):
@@ -77,7 +79,6 @@ class BlogPost(db.Model):
     # author: Mapped[str] = mapped_column(String(250), nullable=False)   
     author_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("user_table.id"))
     author = relationship("User", back_populates="posts")
-
     comments = relationship("Comment", back_populates="posts")
 
 
@@ -105,21 +106,45 @@ with app.app_context():
     db.create_all()
 
 #decorator admin only
+def admin_and_author_only(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        post_id = kwargs.get("post_id")
+        post = BlogPost.query.get_or_404(post_id)
+
+        # Admin can do anything
+        if current_user.is_admin:
+            return func(*args, **kwargs)
+
+        # Author can edit/delete their own post
+        if current_user.is_author and post.author_id == current_user.id:
+            return func(*args, **kwargs)
+
+        abort(403, description="Not authorised.")
+    return wrapper
+
+def admin_or_author_only(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if current_user.is_admin or current_user.is_author:
+            return func(*args, **kwargs)
+        abort(403, description="Not authorised.")
+    return wrapper
+
 def admin_only(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         if current_user.is_admin:
             return func(*args, **kwargs)
-        else:
-            abort(403, {"error_message": "Not authorised ."})
+        abort(403, description="Not authorised.")
     return wrapper
 
-# Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
         try:
+            # Use Werkzeug to hash the user's password when creating a new user.
             hashed_password = generate_password_hash(request.form.get('password'),method='pbkdf2', salt_length=8)
             new_user = User(
                 name = request.form.get("name"),
@@ -204,7 +229,7 @@ def show_post(post_id):
 # TODO: Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 @login_required
-@admin_only
+@admin_or_author_only
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
@@ -225,7 +250,7 @@ def add_new_post():
 # TODO: Use a decorator so only an admin user can edit a post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 @login_required
-@admin_only
+@admin_and_author_only
 def edit_post(post_id):
     post = db.get_or_404(BlogPost, post_id)
     edit_form = CreatePostForm(
@@ -249,7 +274,7 @@ def edit_post(post_id):
 # TODO: Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>")
 @login_required
-@admin_only
+@admin_and_author_only
 def delete_post(post_id):
     post_to_delete = db.get_or_404(BlogPost, post_id)
     db.session.delete(post_to_delete)
@@ -262,11 +287,36 @@ def about():
     return render_template("about.html")
 
 
+
 @app.route("/contact")
 def contact():
     return render_template("contact.html")
 
+# @app.route("/profile/<int:user_id>")
+# def profile(user_id):
+#     user = db.get_or_404(User, user_id)
+    
+#     return render_template("profile.html", user=user)
 
+@app.route("/admin")
+@login_required
+@admin_only
+def admin_dashboard():
+    posts = db.session.execute(db.select(BlogPost)).scalars().all()
+    users = db.session.execute(db.select(User)).scalars().all()
+    admins = db.session.execute(db.select(User).where(User.is_admin==True)).scalars().all()
+    return render_template(
+    "admin.html",
+    posts=posts,
+    users=users,
+    admins=admins,
+    total_posts=len(posts),
+    total_users=len(users)
+)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
