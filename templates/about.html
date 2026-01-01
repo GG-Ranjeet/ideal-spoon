@@ -1,203 +1,113 @@
-{% include "header.html" %}
+{% extends "base.html" %}
 
-{% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles2.css') }}" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% block title %}About Us - Between Semesters{% endblock %}
+
+{% block content %}
 
 <style>
-    /* --- Custom Profile Card Styles --- */
-    
-    /* Wrapper to center the card within the column if needed */
-    .profile-card-wrapper {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-    }
-
-    .profile-card {
-        background-color: white;
-        width: 350px; /* Fixed width for the classic card look */
-        max-width: 100%;
-        border-radius: 15px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        overflow: hidden;
-        text-align: center;
-        padding-bottom: 20px;
+    .team-card {
         transition: transform 0.3s ease;
-        margin-top: 20px;
-        margin-bottom: 20px;
+        border: none;
+        background: transparent;
     }
-
-    .profile-card:hover {
+    .team-card:hover {
         transform: translateY(-5px);
     }
-
-    .profile-card-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        height: 120px;
-        position: relative;
-    }
-
-    .profile-img {
-        width: 120px;
-        height: 120px;
+    .team-avatar {
+        width: 180px;
+        height: 180px;
         border-radius: 50%;
-        border: 5px solid white;
         object-fit: cover;
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: -60px;
-        background-color: #ddd;
-    }
-
-    .profile-card-body {
-        padding-top: 70px;
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-
-    .profile-name {
-        font-size: 24px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 5px;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .profile-title {
-        font-size: 14px;
-        color: #777;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 15px;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .profile-bio {
-        font-size: 14px;
-        color: #555;
-        line-height: 1.6;
-        margin-bottom: 20px;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .social-links {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
+        border: 5px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         margin-bottom: 20px;
     }
-
-    .social-links a {
-        text-decoration: none;
-        color: #555;
-        font-size: 20px;
+    .social-link {
         width: 40px;
         height: 40px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
+        display: inline-flex;
         align-items: center;
-        background-color: #f0f2f5;
-        transition: all 0.3s ease;
-    }
-
-    .social-links a:hover {
-        background-color: #764ba2;
-        color: white;
-    }
-
-    .contact-btn {
-        display: inline-block;
-        padding: 10px 30px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        justify-content: center;
+        background-color: #f8f9fa;
+        color: #333;
+        border-radius: 50%;
+        transition: all 0.3s;
         text-decoration: none;
-        border-radius: 25px;
-        font-weight: 500;
-        transition: opacity 0.3s;
     }
-
-    .contact-btn:hover {
-        opacity: 0.9;
-        color: white;
+    .social-link:hover {
+        background-color: #000;
+        color: #fff;
     }
 </style>
-{% endblock %}
 
 <header class="masthead" style="background-image: url('../static/assets/img/about-bg.jpg')">
-    <div class="container position-relative px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-md-10 col-lg-8 col-xl-7">
-                <div class="page-heading">
-                    <h1>About Me</h1>
-                    <span class="subheading">This is what I do.</span>
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="site-heading">
+          <h1>Meet the Team</h1>
+          <span class="subheading">The minds behind the blog.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<main class="mb-4">
+  <div class="container px-4 px-lg-5">
+    
+    <div class="row gx-4 gx-lg-5 justify-content-center text-center mt-5">
+        
+        {% for admin in admins %}
+        <div class="col-lg-4 col-md-6 mb-5">
+            <div class="team-card h-100 p-4">
+                
+                <img src="{{ admin.email | gravatar(size=300) }}" alt="{{ admin.name }}" class="team-avatar">
+                
+                <h3 class="fw-bold">{{ admin.name }}</h3>
+                
+                <p class="text-primary fw-bold mb-3">Administrator</p>
+                
+                <p class="text-muted mb-4 px-lg-3">
+                    {% if admin.bio %}
+                        {{ admin.bio }}
+                    {% else %}
+                        No bio available yet.
+                    {% endif %}
+                </p>
+                
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="mailto:{{ admin.email }}" class="social-link" title="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+
+                    {% if admin.github_url %}
+                    <a href="{{ admin.github_url }}" target="_blank" class="social-link" title="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    {% endif %}
+
+                    {% if admin.linkedin_url %}
+                    <a href="{{ admin.linkedin_url }}" target="_blank" class="social-link" title="LinkedIn">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('profile', user_id=admin.id) }}" class="social-link" title="View Profile">
+                        <i class="fas fa-user"></i>
+                    </a>
                 </div>
+
+                {% if current_user.is_authenticated and current_user.id == admin.id %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('edit_profile') }}" class="btn btn-sm btn-outline-secondary">Edit My Info</a>
+                    </div>
+                {% endif %}
+
             </div>
         </div>
-    </div>
-</header>
+        {% endfor %}
 
-<main class="mb-4">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            
-            <div class="col-md-6 col-lg-4 mb-5"> <div class="profile-card">
-                    <div class="profile-card-header">
-                        <img src="https://i.pravatar.cc/300?img=1" alt="Profile Image" class="profile-img">
-                    </div>
-                    <div class="profile-card-body">
-                        <h1 class="profile-name">John Doe</h1>
-                        <h2 class="profile-title">Lead Developer</h2>
-                        <p class="profile-bio">
-                            Architecting the future of the web.
-                        </p>
-                        <div class="social-links">
-                            <a href="#"><i class="fab fa-github"></i></a>
-                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                        </div>
-                        <a href="#" class="contact-btn">Contact</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4 mb-5">
-                <div class="profile-card">
-                    <div class="profile-card-header">
-                        <img src="https://i.pravatar.cc/300?img=5" alt="Profile Image" class="profile-img">
-                    </div>
-                    <div class="profile-card-body">
-                        <h1 class="profile-name">Jane Smith</h1>
-                        <h2 class="profile-title">UI/UX Designer</h2>
-                        <p class="profile-bio">
-                            Crafting beautiful user experiences.
-                        </p>
-                        <div class="social-links">
-                            <a href="#"><i class="fab fa-dribbble"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                        </div>
-                        <a href="#" class="contact-btn">Contact</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4 mb-5">
-                <div class="profile-card">
-                    <div class="profile-card-header">
-                        <img src="https://i.pravatar.cc/300?img=8" alt="Profile Image" class="profile-img">
-                    </div>
-                    <div class="profile-card-body">
-                        <h1 class="profile-name">Mike Ross</h1>
-                        <h2 class="profile-title">Product Manager</h2>
-                        <p class="profile-bio">
-                            Connecting business with technology.
-                        </p>
-                        <div class="social-links">
-                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                        </div>
-                        <a href="#" class="contact-btn">Contact</a>
-                    </div>
-                </div>
-            </div>
-            </div>
     </div>
+  </div>
 </main>
+{% endblock %}

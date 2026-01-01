@@ -1,65 +1,176 @@
-{% from "bootstrap5/form.html" import render_form %}
-{% include "header.html" %}
+{% extends "base.html" %}
 
-<!-- Page Header-->
-<header class="masthead" style="background-image: url('{{post.img_url}}')">
+{% block title %}{{ post.title }} - Between Semesters{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Article Body Typography */
+    .blog-content {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        color: #2c3e50;
+        font-family: 'Georgia', 'Times New Roman', serif; /* Serif fonts are better for long reading */
+    }
+    
+    /* Make images inside the post responsive and pretty */
+    .blog-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin: 30px 0;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Blockquotes styling */
+    .blog-content blockquote {
+        border-left: 5px solid #0085a1;
+        padding-left: 20px;
+        font-style: italic;
+        color: #6c757d;
+        margin: 30px 0;
+    }
+
+    /* Comment Section Styling */
+    .comment-section {
+        background-color: #fcfcfc;
+        border-top: 1px solid #eaeaea;
+        padding-top: 60px;
+    }
+    
+    .comment-card {
+        transition: all 0.2s;
+    }
+    
+    .comment-avatar img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+</style>
+
+<header class="masthead" style="background-image: url('{{ post.img_url }}'); margin-bottom: 0;">
+  <div class="overlay" style="background: rgba(0,0,0,0.4);"></div>
+  
   <div class="container position-relative px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
-        <div class="post-heading">
-          <h1>{{ post.title }}</h1>
-          <h2 class="subheading">{{ post.subtitle }}</h2>
-          <span class="meta"
-            >Posted by
-            <a href="#">{{ post.author.name }}</a>
-            on {{ post.date }}
-          </span>
+        <div class="post-heading text-center">
+          <h1 class="fw-bold display-4">{{ post.title }}</h1>
+          <h2 class="subheading fw-light mb-4">{{ post.subtitle }}</h2>
+          
+          <div class="d-inline-flex align-items-center bg-white bg-opacity-25 rounded-pill px-4 py-2 backdrop-blur">
+              <span class="meta text-white mb-0" style="font-size: 0.9rem;">
+                Posted by <strong><a href="{{ url_for('profile', user_id=current_user.id) }}">{{ post.author.name }}</a</strong> on {{ post.date }}
+              </span>
+          </div>
+
         </div>
       </div>
     </div>
   </div>
 </header>
 
-<!-- Post Content -->
-<article>
+<article class="mb-5 mt-5">
   <div class="container px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
-        {{ post.body|safe }}
-        <!--TODO: Only show Edit Post button if user id is 1 (admin user) -->
-        <div class="d-flex justify-content-end mb-4">
-        {% if current_user == post.author %}
-          <a
-            class="btn btn-primary float-right" 
-            href="{{url_for('edit_post', post_id=post.id)}}">
-            Edit Post
-          </a>
-        {% endif %}
+        
+        <div class="blog-content">
+            {{ post.body|safe }}
         </div>
 
-        <!-- Comments Area -->
-        {{ ckeditor.load() }} {{ ckeditor.config(name='body') }}
-        {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
-        <!-- TODO: Add a CKEditor for commenting below -->
-        <div class="comment">
-          <!-- TODO: Show all the comments on a post -->
-          <ul class="commentList">
-            {% for comment in post.comments %}
-            <li>
-              <div class="commenterImage">
-                <img src="{{ comment.author.email|gravatar(size=200)  }}" />
-              </div>
-              <div class="commentText">
-                <p>{{comment.text}}</p>
-                <span class="date sub-text">{{comment.author.name}}</span>
-              </div>
-            </li>
-            {% endfor %}
-          </ul>
+        {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
+        <div class="d-flex justify-content-end mt-5">
+          <a class="btn btn-outline-dark btn-sm rounded-pill px-4" href="{{ url_for('edit_post', post_id=post.id) }}">
+            <i class="fas fa-pencil-alt me-2"></i>Edit Article
+          </a>
         </div>
+        {% endif %}
+
       </div>
     </div>
   </div>
 </article>
 
-{% include "footer.html" %}
+<section class="comment-section pb-5">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                
+                <h3 class="mb-4 fw-bold text-secondary"><i class="far fa-comments me-2"></i>Discussion</h3>
+
+                <div class="card border-0 shadow-sm rounded-lg mb-5">
+                    <div class="card-body p-4">
+                        {% if current_user.is_authenticated %}
+                            <h5 class="card-title mb-3 fs-6 text-muted">Leave a comment</h5>
+                            
+                            {{ ckeditor.load() }}
+                            {{ ckeditor.config(name='comment') }}
+                            
+                            <form method="POST">
+                                {{ form.hidden_tag() }}
+                                <div class="mb-3">
+                                    {{ form.comment(class="form-control") }}
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-dark rounded-pill px-4">Post Comment</button>
+                                </div>
+                            </form>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <h5 class="fw-light mb-3">Join the conversation</h5>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="{{ url_for('login') }}" class="btn btn-outline-dark rounded-pill px-4">Log In</a>
+                                    <a href="{{ url_for('register') }}" class="btn btn-dark rounded-pill px-4">Register</a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="comment-list">
+                    {% for comment in post.comments %}
+                    <div class="d-flex mb-4 comment-card p-3 rounded">
+                        <div class="flex-shrink-0 comment-avatar me-3">
+                            <img src="{{ comment.author.email | gravatar(size=100) }}" alt="{{ comment.author.name }}">
+                        </div>
+                        
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span class="fw-bold text-dark">{{ comment.author.name }}</span>
+                                    
+                                    {% if comment.author.is_admin %}
+                                        <span class="badge bg-danger ms-1" style="font-size: 0.6rem;">ADMIN</span>
+                                    {% elif comment.author.id == post.author_id %}
+                                        <span class="badge bg-info text-dark ms-1" style="font-size: 0.6rem;">AUTHOR</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted" style="font-size: 0.75rem;">Just now</small>
+                            </div>
+                            
+                            <div class="bg-white p-3 rounded shadow-sm border border-light text-secondary">
+                                {{ comment.text|safe }}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 opacity-50">
+                        <i class="far fa-comment-dots fa-3x mb-3"></i>
+                        <p>No comments yet. Start the discussion!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

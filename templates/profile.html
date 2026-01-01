@@ -1,178 +1,126 @@
-{% include "header.html" %}
+{% extends "base.html" %}
 
-{% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles2.css') }}" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% block title %}{{ user.name }} - Profile{% endblock %}
+
+{% block content %}
 
 <style>
-    /* --- REUSING YOUR EXISTING CARD STYLES --- */
-    .profile-card {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        overflow: hidden;
-        text-align: center;
-        padding-bottom: 20px;
-        margin-bottom: 30px; /* Space below card on mobile */
-    }
-
-    .profile-card-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        height: 100px;
+    .profile-header-bg {
+        height: 200px;
+        background: linear-gradient(to right, #2c3e50, #4ca1af);
         position: relative;
     }
-
-    .profile-img {
-        width: 100px;
-        height: 100px;
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
         border-radius: 50%;
-        border: 4px solid white;
-        object-fit: cover;
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: -50px;
+        border: 5px solid #fff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        background-color: #fff;
+        margin-top: -75px; /* Pulls image up into the banner */
     }
-
-    .profile-card-body {
-        padding-top: 60px;
-        padding-left: 15px;
-        padding-right: 15px;
-    }
-
-    .profile-name { font-size: 20px; font-weight: 600; color: #333; margin-bottom: 5px; }
-    .profile-title { font-size: 13px; color: #777; text-transform: uppercase; margin-bottom: 15px; }
-
-    .social-links { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
-    .social-links a {
-        color: #555; width: 35px; height: 35px; border-radius: 50%;
-        display: flex; justify-content: center; align-items: center;
-        background-color: #f0f2f5; transition: all 0.3s;
-    }
-    .social-links a:hover { background-color: #764ba2; color: white; }
-
-    /* --- NEW STYLES FOR THE RIGHT CONTENT SECTION --- */
-    .profile-content {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        padding: 30px;
-        height: 100%; /* Match height of card if content is long */
-    }
-
-    .section-title {
-        font-size: 18px;
-        font-weight: 600;
+    .social-icon-btn {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: #f1f3f5;
         color: #333;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #f0f2f5;
-        padding-bottom: 10px;
-    }
-
-    .info-row {
-        display: flex;
-        margin-bottom: 15px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-    }
-    
-    .info-label { width: 130px; font-weight: 600; color: #666; }
-    .info-value { color: #333; flex: 1; }
-
-    .btn-edit {
-        background-color: #667eea;
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 5px;
         transition: 0.3s;
+        text-decoration: none;
     }
-    .btn-edit:hover { background-color: #5a6fd6; color: white; }
-
+    .social-icon-btn:hover {
+        background-color: #333;
+        color: #fff;
+    }
 </style>
-{% endblock %}
 
-<header class="masthead" style="background-image: url('../static/assets/img/about-bg.jpg'); height: 300px; min-height: 300px;">
-    <div class="container position-relative px-4 px-lg-5">
+<div class="profile-header-bg"></div>
+
+<main class="mb-5">
+    <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-md-10 col-lg-8 col-xl-7">
-                <div class="page-heading" style="padding-top: 100px;">
-                    <h1>My Profile</h1>
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
-
-<main class="mb-4" style="margin-top: -50px;"> <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5">
-            
-            <div class="col-md-4">
-                <div class="profile-card">
-                    <div class="profile-card-header">
-                        <img src="https://i.pravatar.cc/300?img=12" alt="Profile" class="profile-img">
-                    </div>
-                    <div class="profile-card-body">
-                        <h1 class="profile-name">Alex Johnson</h1>
-                        <h2 class="profile-title">Full Stack Developer</h2>
+                
+                <div class="card shadow-sm border-0 rounded-lg mb-4 text-center" style="margin-top: -50px;">
+                    <div class="card-body p-4">
                         
-                        <div class="social-links">
-                            <a href="#"><i class="fab fa-github"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <img src="{{ user.email | gravatar(size=200) }}" alt="{{ user.name }}" class="profile-avatar mb-3">
+
+                        <h2 class="fw-bold mb-1">{{ user.name }}</h2>
+                        <div class="mb-3">
+                            {% if user.is_admin %}
+                                <span class="badge bg-danger">Admin</span>
+                            {% elif user.is_author %}
+                                <span class="badge bg-primary">Author</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Reader</span>
+                            {% endif %}
                         </div>
-                        
-                        <hr>
-                        <div class="text-start px-3 text-muted" style="font-size: 0.9rem;">
-                            <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i> New York, USA</p>
-                            <p class="mb-1"><i class="fas fa-globe me-2"></i> alexjohnson.dev</p>
-                            <p class="mb-0"><i class="fas fa-calendar-alt me-2"></i> Joined Jan 2024</p>
+
+                        <div class="px-md-5 mb-4">
+                            {% if user.bio %}
+                                <p class="text-muted fst-italic">{{ user.bio }}</p>
+                            {% else %}
+                                <p class="text-muted small">No bio added yet.</p>
+                            {% endif %}
                         </div>
+
+                        <div class="d-flex justify-content-center gap-3 mb-4">
+                            <a href="mailto:{{ user.email }}" class="social-icon-btn" title="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+
+                            {% if user.github_url %}
+                            <a href="{{ user.github_url }}" target="_blank" class="social-icon-btn" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            {% endif %}
+
+                            {% if user.linkedin_url %}
+                            <a href="{{ user.linkedin_url }}" target="_blank" class="social-icon-btn" title="LinkedIn">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-2 border-top pt-4">
+                            {% if current_user.is_authenticated and current_user.id == user.id %}
+                                <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary rounded-pill px-4">
+                                    <i class="fas fa-pencil-alt me-1"></i> Edit Profile
+                                </a>
+                            {% endif %}
+
+                            {% if current_user.is_admin %}
+                                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-dark rounded-pill px-4">
+                                    Admin Panel
+                                </a>
+                            {% endif %}
+                        </div>
+
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-8">
-                <div class="profile-content">
-                    
-                    <h3 class="section-title">About Me</h3>
-                    <p class="text-muted">
-                        I am a software engineer with over 5 years of experience in building web applications. 
-                        I specialize in Python, Flask, and JavaScript. In my free time, I enjoy contributing 
-                        to open-source projects and hiking.
-                    </p>
-
-                    <h3 class="section-title mt-4">Personal Details</h3>
-                    
-                    <div class="info-row">
-                        <span class="info-label">Full Name</span>
-                        <span class="info-value">Alex Michael Johnson</span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Email</span>
-                        <span class="info-value">alex.j@example.com</span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Phone</span>
-                        <span class="info-value">+1 (555) 123-4567</span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">Occupation</span>
-                        <span class="info-value">Senior Developer</span>
-                    </div>
-
-                    <div class="mt-4 text-end">
-                        <a href="#" class="btn btn-edit">Edit Profile</a>
-                    </div>
-
+                {% if user.posts %}
+                <h4 class="mb-4 mt-5 fw-bold text-secondary">Recent Posts by {{ user.name }}</h4>
+                <div class="list-group shadow-sm">
+                    {% for post in user.posts %}
+                    <a href="{{ url_for('show_post', post_id=post.id) }}" class="list-group-item list-group-item-action p-3 d-flex align-items-center border-0 border-bottom">
+                        <div style="width: 50px; height: 50px; background-image: url('{{ post.img_url }}'); background-size: cover; border-radius: 8px;" class="me-3"></div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">{{ post.title }}</h6>
+                            <small class="text-muted">{{ post.date }}</small>
+                        </div>
+                    </a>
+                    {% endfor %}
                 </div>
-            </div>
+                {% endif %}
 
+            </div>
         </div>
     </div>
 </main>
 
-{% include "footer.html" %}
+{% endblock %}

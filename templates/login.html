@@ -1,12 +1,9 @@
-{% from "bootstrap5/form.html" import render_form %} 
-{% block content %} 
-{% include "header.html" %}
+{% extends "base.html" %}
 
-<!-- Page Header -->
-<header
-  class="masthead"
-  style="background-image: url('../static/assets/img/login-bg.jpg')"
->
+{% block title %}Log In - Between Semesters{% endblock %}
+
+{% block content %}
+<header class="masthead" style="background-image: url('../static/assets/img/login-bg.jpg')">
   <div class="container position-relative px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
@@ -21,21 +18,59 @@
 
 <main class="mb-4">
   <div class="container">
-    <div class="row">
-      <!-- TODO: add a flash message here for users registering twice -->
-       {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      {% for message in messages %}
-        <p>{{ message }}</p>  
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-      <div class="col-lg-8 col-md-10 mx-auto">
-        <!--TODO: render login form here-->
-        {{ render_form(form) }}
+    <div class="row justify-content-center">
+      <div class="col-lg-5 col-md-8">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category if category != 'message' else 'danger' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="card shadow border-0 rounded-lg mt-3">
+            <div class="card-header bg-white border-0 text-center pt-4">
+                 <h4 class="fw-light my-2">Sign in to your account</h4>
+            </div>
+            <div class="card-body p-4">
+                
+                <form method="POST" action="{{ url_for('login') }}" novalidate>
+                    {{ form.hidden_tag() }} <div class="form-floating mb-3">
+                        {{ form.email(class="form-control", id="email", placeholder="name@example.com") }}
+                        <label for="email">Email address</label>
+                        {% if form.email.errors %}
+                            <span class="text-danger small">{{ form.email.errors[0] }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {{ form.password(class="form-control", id="password", placeholder="Password") }}
+                        <label for="password">Password</label>
+                        {% if form.password.errors %}
+                            <span class="text-danger small">{{ form.password.errors[0] }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer text-center py-3 bg-light border-0 rounded-bottom">
+                <div class="small">
+                    <a href="{{ url_for('register') }}" class="text-decoration-none">Need an account? Sign up!</a>
+                </div>
+            </div>
+        </div>
+
       </div>
     </div>
   </div>
 </main>
 
-{% include "footer.html" %} {% endblock %}
+{% endblock %}

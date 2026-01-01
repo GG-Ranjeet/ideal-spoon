@@ -211,8 +211,17 @@
                                             <td>{{ loop.index }}</td>
                                             <td>{{ user.name }}</td>
                                             <td>{{ user.email }}</td>
-                                            <td>                                                
-                                                {{ user.role_names() | join(', ') }}
+                                            <td>
+                                                {% if user.is_admin %}
+                                                    <span class="badge bg-danger">Admin</span>
+                                                    {% if user.is_author %}
+                                                    <span class="badge bg-primary">Author</span>
+                                                    {% endif %}
+                                                {% elif user.is_author %}
+                                                    <span class="badge bg-primary">Author</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Reader</span>
+                                                {% endif %}
                                             </td>
                                         </tr>
                                         {% endfor %}
