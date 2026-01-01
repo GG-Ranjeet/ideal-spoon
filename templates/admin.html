@@ -86,9 +86,9 @@
                                 <div class="card card-stat shadow-sm p-3">
                                     <h6>Admin</h6>
                                     <h3>
-                                    {% for admin in admins %}
+                                        {% for admin in admins %}
                                         {{ admin.name }}{% if not loop.last %}, {% endif %}
-                                    {% endfor %}
+                                        {% endfor %}
                                     </h3>
                                 </div>
                             </div>
@@ -202,6 +202,7 @@
                                             <th>#</th>
                                             <th>Name</th>
                                             <th>Email</th>
+                                            <th>Role</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -210,6 +211,9 @@
                                             <td>{{ loop.index }}</td>
                                             <td>{{ user.name }}</td>
                                             <td>{{ user.email }}</td>
+                                            <td>                                                
+                                                {{ user.role_names() | join(', ') }}
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -221,7 +225,7 @@
             </div>
         </div>
     </div>
-        {{ bootstrap.load_js() }}
+    {{ bootstrap.load_js() }}
 </body>
 
 </html>

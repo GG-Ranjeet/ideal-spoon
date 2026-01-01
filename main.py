@@ -45,8 +45,8 @@ def load_user(user_id):
 
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
-# app.config['SQLALCHEMY_DATABASE_URI'] =  "sqlite:///posts.db"
+# app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
+app.config['SQLALCHEMY_DATABASE_URI'] =  "sqlite:///posts.db"
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -63,6 +63,14 @@ class User(UserMixin, db.Model):
 
     is_author = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False)
+    def role_names(self):
+        roles = []
+        if self.is_admin:
+            roles.append("Admin")
+        if self.is_author:
+            roles.append("Author")
+        return roles or ["User"]
+
 
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
@@ -293,11 +301,11 @@ def about():
 def contact():
     return render_template("contact.html")
 
-# @app.route("/profile/<int:user_id>")
-# def profile(user_id):
-#     user = db.get_or_404(User, user_id)
+@app.route("/profile/<int:user_id>")
+def profile(user_id):
+    user = db.get_or_404(User, user_id)
     
-#     return render_template("profile.html", user=user)
+    return render_template("profile.html", user=user)
 
 @app.route("/admin")
 @login_required
@@ -322,4 +330,4 @@ def page_not_found(e):
     return render_template("404.html"), 404
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)

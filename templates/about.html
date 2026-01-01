@@ -1,103 +1,203 @@
 {% include "header.html" %}
+
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles2.css') }}" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    /* --- Custom Profile Card Styles --- */
+    
+    /* Wrapper to center the card within the column if needed */
+    .profile-card-wrapper {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .profile-card {
+        background-color: white;
+        width: 350px; /* Fixed width for the classic card look */
+        max-width: 100%;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        overflow: hidden;
+        text-align: center;
+        padding-bottom: 20px;
+        transition: transform 0.3s ease;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .profile-card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 120px;
+        position: relative;
+    }
+
+    .profile-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 5px solid white;
+        object-fit: cover;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: -60px;
+        background-color: #ddd;
+    }
+
+    .profile-card-body {
+        padding-top: 70px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .profile-name {
+        font-size: 24px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .profile-title {
+        font-size: 14px;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .profile-bio {
+        font-size: 14px;
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .social-links a {
+        text-decoration: none;
+        color: #555;
+        font-size: 20px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f2f5;
+        transition: all 0.3s ease;
+    }
+
+    .social-links a:hover {
+        background-color: #764ba2;
+        color: white;
+    }
+
+    .contact-btn {
+        display: inline-block;
+        padding: 10px 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: opacity 0.3s;
+    }
+
+    .contact-btn:hover {
+        opacity: 0.9;
+        color: white;
+    }
+</style>
 {% endblock %}
-<!-- Page Header-->
+
 <header class="masthead" style="background-image: url('../static/assets/img/about-bg.jpg')">
-  <div class="container position-relative px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="col-md-10 col-lg-8 col-xl-7">
-        <div class="page-heading">
-          <h1>About Us</h1>
-          <span class="subheading">This is what I do.</span>
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="page-heading">
+                    <h1>About Me</h1>
+                    <span class="subheading">This is what I do.</span>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </header>
-<!-- Main Content-->
+
 <main class="mb-4">
-  <div class="container px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="">
-        <div class="card shadow-sm" style="width: 18rem">
-          <div class="front" style="background-image: url()">
-            <p class="large">nothing</p>
-          </div>
-          <!-- Card Body -->
-          <div class="back">
-            <h5 class="card-title">
-              This is Title
-              <small class="text-muted">(This is date)</small>
-            </h5>
-
-            <p class="mb-1">
-              <strong>Rating:</strong>
-              <i class="fas fa-star text-warning"></i>
-            </p>
-
-            <p class="card-text fst-italic">"review"</p>
-
-            <p class="card-text">description</p>
-
-            <div class="d-flex gap-2">
-              <a href="" class="btn btn-primary btn-sm">Update</a>
-              <a href="" class="btn btn-danger btn-sm">Delete</a>
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            
+            <div class="col-md-6 col-lg-4 mb-5"> <div class="profile-card">
+                    <div class="profile-card-header">
+                        <img src="https://i.pravatar.cc/300?img=1" alt="Profile Image" class="profile-img">
+                    </div>
+                    <div class="profile-card-body">
+                        <h1 class="profile-name">John Doe</h1>
+                        <h2 class="profile-title">Lead Developer</h2>
+                        <p class="profile-bio">
+                            Architecting the future of the web.
+                        </p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-github"></i></a>
+                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                        <a href="#" class="contact-btn">Contact</a>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <!-- FRONT -->
-          <div class="front" style="background-image: url('IMAGE_URL_HERE')">
-            <p class="large">Nothing</p>
-          </div>
-
-          <!-- BACK -->
-          <div class="back">
-            <div>
-              <div class="title">
-                This is Title
-                <span class="release_date">(This is date)</span>
-              </div>
-
-              <div class="rating">
-                <label>Rating</label>
-                ★★★★☆
-              </div>
-
-              <p class="review">"review"</p>
-
-              <p class="overview">description</p>
-
-              <a href="#" class="button">Update</a>
-              <a href="#" class="button delete-button">Delete</a>
+            <div class="col-md-6 col-lg-4 mb-5">
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <img src="https://i.pravatar.cc/300?img=5" alt="Profile Image" class="profile-img">
+                    </div>
+                    <div class="profile-card-body">
+                        <h1 class="profile-name">Jane Smith</h1>
+                        <h2 class="profile-title">UI/UX Designer</h2>
+                        <p class="profile-bio">
+                            Crafting beautiful user experiences.
+                        </p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-dribbble"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                        </div>
+                        <a href="#" class="contact-btn">Contact</a>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-
-        <div class="card" style="width: 18rem">
-          <div class="front" style="background-image: url()">
-            <p class="large">nothing</p>
-          </div>
-          <div class="back">
-            <div>
-              <h5 class="card-title">
-                This is Title
-                <small class="text-muted">(This is date)</small>
-              </h5>
-              <div class="rating">
-                <label>Rating</label>
-                <i class="fas fa-star star"></i>
-              </div>
-              <p class="review">"review"</p>
-              <p class="overview">description</p>
+            <div class="col-md-6 col-lg-4 mb-5">
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <img src="https://i.pravatar.cc/300?img=8" alt="Profile Image" class="profile-img">
+                    </div>
+                    <div class="profile-card-body">
+                        <h1 class="profile-name">Mike Ross</h1>
+                        <h2 class="profile-title">Product Manager</h2>
+                        <p class="profile-bio">
+                            Connecting business with technology.
+                        </p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                        <a href="#" class="contact-btn">Contact</a>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
+            </div>
     </div>
-  </div>
 </main>
-
-{% include "footer.html" %}
