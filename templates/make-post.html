@@ -34,7 +34,7 @@
             <h5 class="text-muted fw-light">Post Details</h5>
             <hr>
           </div>
-
+          
           <div class="card-body px-5 pb-5">
 
             <form method="POST" novalidate>
@@ -73,8 +73,7 @@
               </div>
 
               <div class="d-flex justify-content-end gap-2 mt-5">
-                <a href="{{ url_for('get_all_posts') }}" class="btn btn-outline-secondary px-4">Cancel</a>
-
+                <a href="{{ url_for('home') }}" class="btn btn-outline-secondary px-4">Cancel</a>
                 <button type="submit" class="btn btn-primary px-5 fw-bold">
                   {% if is_edit %}Save Changes{% else %}Publish Post{% endif %}
                 </button>

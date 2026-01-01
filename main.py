@@ -48,8 +48,6 @@ def load_user(user_id):
 
 class Base(DeclarativeBase):
     pass
-# app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
-app.config['SQLALCHEMY_DATABASE_URI'] =  "sqlite:///posts.db"
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
@@ -398,32 +396,24 @@ def profile(user_id):
     
     return render_template("profile.html", user=user)
 
-@app.route("/profile/<int:user_id>")
-def profile(user_id):
-    user = db.get_or_404(User, user_id)
-
-    return render_template("profile.html", user=user)
 
 
 @app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
 def edit_profile():
-    form = EditProfileForm(
-        name=current_user.name,
-        bio=current_user.bio,
-        linkedin_url=current_user.linkedin_url,
-        github_url=current_user.github_url
-    )
+    form = EditProfileForm(obj=current_user)
 
     if form.validate_on_submit():
         current_user.name = form.name.data
         current_user.bio = form.bio.data
         current_user.linkedin_url = form.linkedin_url.data
         current_user.github_url = form.github_url.data
-
         db.session.commit()
         flash("Profile updated successfully!", "success")
         return redirect(url_for('profile', user_id=current_user.id))
+    else:
+        flash("Enter valid URL!", "unsuccessful")
+        pass
     return render_template("edit-profile.html", form=form)
 
 @app.route("/admin")
@@ -453,4 +443,4 @@ def page_not_found(e):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
