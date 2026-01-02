@@ -66,7 +66,7 @@
           
           <div class="d-inline-flex align-items-center bg-white bg-opacity-25 rounded-pill px-4 py-2 backdrop-blur">
               <span class="meta text-white mb-0" style="font-size: 0.9rem;">
-                Posted by <strong><a href="{{ url_for('profile', user_id=current_user.id) }}">{{ post.author.name }}</a</strong> on {{ post.date }}
+                Posted by <strong><a href="{{ url_for('profile', user_id=post.author.id) }}">{{ post.author.name }}</a</strong> on {{ post.date }}
               </span>
           </div>
 
