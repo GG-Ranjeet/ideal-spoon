@@ -9,14 +9,14 @@ from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from forms import CreatePostForm, LoginForm, RegisterForm, CommentForm, EditProfileForm
 import os
 import bleach
 import smtplib  # For sending email
 from forms import ContactForm
 from datetime import datetime
-
+from dotenv import load_dotenv
 '''
 Make sure the required packages are installed: 
 Open the Terminal in PyCharm (bottom left). 
@@ -29,10 +29,11 @@ pip3 install -r requirements.txt
 
 This will install the packages from the requirements.txt for this project.
 '''
-
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
+#app.config['SECRET_KEY'] = 'this_is_the_test_key'
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
@@ -49,10 +50,23 @@ def load_user(user_id):
 class Base(DeclarativeBase):
     pass
 
+if os.environ.get('RENDER'):
+    # We are on Render
+    print("Loading Internal Database URL (Cloud)")
+    database_uri = os.environ.get("DB_URI") # The internal 'dpg-...' URL
+else:
+    # We are on Mobile/Local
+    print("Loading External Database URL (Mobile)")
+    database_uri = os.environ.get("DB_URI1") # The external 'oregon-postgres...' URL
 
-app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DB_URI","sqlite:///posts.db")
-# app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///posts.db"
+# Fallback if both are missing
+if not database_uri:
+  app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///posts.db"
+else:
+  app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
+
 db = SQLAlchemy(model_class=Base)
+
 db.init_app(app)
 
 """-----------------------------------CREATE TABLE IN DB----------------------------"""
@@ -443,4 +457,4 @@ def page_not_found(e):
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)

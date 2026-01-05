@@ -1,6 +1,8 @@
-{% from "bootstrap5/form.html" import render_form %} {% block content %} {%
-include "header.html" %}
+{% extends "base.html" %}
+{% from "bootstrap5/form.html" import render_form %}
+{% block title %}Log In - Between Semesters{% endblock %}
 
+{% block content %}
 <!-- Page Header -->
 <header class="masthead" style="background-image: url('../static/assets/img/register-bg.jpg')">
   <div class="container position-relative px-4 px-lg-5">
@@ -31,5 +33,4 @@ include "header.html" %}
     </div>
   </div>
 </main>
-
-{% include "footer.html" %} {% endblock %}
+{% endblock %}
