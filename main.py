@@ -3,22 +3,14 @@ from flask import Flask, abort, render_template, redirect, url_for, flash, reque
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from flask_login import UserMixin, login_required, login_user, LoginManager, current_user, logout_user
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-from wtforms import StringField
-from forms import CreatePostForm, LoginForm, RegisterForm, CommentForm, EditProfileForm
+from forms import CreatePostForm, LoginForm, RegisterForm, CommentForm, EditProfileForm, ContactForm
 import os
 import bleach
-import smtplib  # For sending email
-from forms import ContactForm
 from datetime import datetime
 from dotenv import load_dotenv
-from flask_pymongo import PyMongo
 from flask_mongoengine import MongoEngine
-import shortuuid
 from mongoengine.errors import NotUniqueError
 import hashlib
 
@@ -53,13 +45,6 @@ def load_user(user_id):
     user_id = str(user_id)
     return User.objects(pk=user_id).first()
 
-
-class Base(DeclarativeBase):
-    pass
-
-def generate_short_id():
-    # alphabet parameter removes ambiguous characters like l, 1, I, O, 0
-    return shortuuid.ShortUUID(alphabet="0123456789").random(length=10)
 
 app.config['MONGODB_SETTINGS'] = {
     'host': os.environ.get("MONGO_URI")
@@ -108,8 +93,6 @@ class User(UserMixin, db.Document):
         return Comment.objects(author=self)
 
 class BlogPost(db.Document):
-    __tablename__ = "blog_posts"
-    id = db.StringField(primary_key=True, default=generate_short_id)
     title = db.StringField(required=True, unique=True, max_length=250)
     subtitle = db.StringField(required=True, max_length=250)
     date = db.StringField(required=True, max_length=250)
@@ -403,6 +386,7 @@ def about():
     admins = list(result)
     return render_template("about.html", admins=admins)
 
+
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     # 1. Handle POST request (User submitting form)
@@ -431,6 +415,7 @@ def profile(user_id):
     user = User.objects.get_or_404(pk=user_id)
     return render_template("profile.html", user=user)
 
+
 @app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
 def edit_profile():
@@ -448,6 +433,7 @@ def edit_profile():
         flash("Enter valid URL!", "unsuccessful")
         pass
     return render_template("edit-profile.html", form=form)
+
 
 @app.route("/admin")
 @login_required
@@ -472,6 +458,6 @@ def admin_dashboard():
 def page_not_found(e):
     return render_template("404.html"), 404
 
-
+debugging = os.environ.get("DEBUGG")
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=debugging)
