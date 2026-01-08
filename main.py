@@ -2,14 +2,13 @@ from datetime import date
 from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
-from flask_gravatar import Gravatar
 from flask_login import UserMixin, login_required, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.exc import IntegrityError, OperationalError
+from wtforms import StringField
 from forms import CreatePostForm, LoginForm, RegisterForm, CommentForm, EditProfileForm
 import os
 import bleach
@@ -17,6 +16,13 @@ import smtplib  # For sending email
 from forms import ContactForm
 from datetime import datetime
 from dotenv import load_dotenv
+from flask_pymongo import PyMongo
+from flask_mongoengine import MongoEngine
+import shortuuid
+from mongoengine.errors import NotUniqueError
+import hashlib
+
+# from flask_gravatar import Gravatar
 '''
 Make sure the required packages are installed: 
 Open the Terminal in PyCharm (bottom left). 
@@ -33,7 +39,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
-#app.config['SECRET_KEY'] = 'this_is_the_test_key'
+# app.config['SECRET_KEY'] = 'this_is_the_test_key'
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
@@ -44,53 +50,44 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.get_or_404(User, user_id)
+    user_id = str(user_id)
+    return User.objects(pk=user_id).first()
 
 
 class Base(DeclarativeBase):
     pass
 
-if os.environ.get('RENDER'):
-    # We are on Render
-    print("Loading Internal Database URL (Cloud)")
-    database_uri = os.environ.get("DB_URI") # The internal 'dpg-...' URL
-else:
-    # We are on Mobile/Local
-    print("Loading External Database URL (Mobile)")
-    database_uri = os.environ.get("DB_URI1") # The external 'oregon-postgres...' URL
+def generate_short_id():
+    # alphabet parameter removes ambiguous characters like l, 1, I, O, 0
+    return shortuuid.ShortUUID(alphabet="0123456789").random(length=10)
 
-# Fallback if both are missing
-if not database_uri:
-  app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///posts.db"
-else:
-  app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
+app.config['MONGODB_SETTINGS'] = {
+    'host': os.environ.get("MONGO_URI")
+}
+db = MongoEngine(app)
 
-db = SQLAlchemy(model_class=Base)
+# db.init_app(app)
 
-db.init_app(app)
 
 """-----------------------------------CREATE TABLE IN DB----------------------------"""
 
 
-class User(UserMixin, db.Model):
-    __tablename__ = "user_table"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(1000), nullable=False)
-    email: Mapped[str] = mapped_column(
-        String(100), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(100), nullable=False)
+class User(UserMixin, db.Document):
+    __tablename__ = "users"
+    # 1. Basic Fields
+    name = db.StringField(required=True, max_length=100)
+    email = db.EmailField(required=True, unique=True)
+    password = db.StringField(required=True)
 
-    # --- NEW COLUMNS ---
-    bio: Mapped[str] = mapped_column(Text, nullable=True) 
-    linkedin_url: Mapped[str] = mapped_column(String(250), nullable=True)
-    github_url: Mapped[str] = mapped_column(String(250), nullable=True)
-    # -------------------
+    # 2. New Columns (Profile Data)
+    # Note: In Mongo, we don't need nullable=True. If the data isn't there, the field just isn't saved.
+    bio = db.StringField() 
+    linkedin_url = db.StringField(max_length=250)
+    github_url = db.StringField(max_length=250)
 
-    posts = relationship("BlogPost", back_populates="author")
-    comments = relationship("Comment", back_populates="author")
-
-    is_author = db.Column(db.Boolean, default=False)
-    is_admin = db.Column(db.Boolean, default=False)
+    # 3. Roles
+    is_author = db.BooleanField(default=False)
+    is_admin = db.BooleanField(default=False)
     def role_names(self):
         roles = []
         if self.is_admin:
@@ -99,63 +96,92 @@ class User(UserMixin, db.Model):
             roles.append("Author")
         return roles or ["User"]
 
+    # Properties
+    # posts = relationship("BlogPost", back_populates="author")
+    # comments = relationship("Comment", back_populates="author")
+    @property
+    def posts(self):
+        return BlogPost.objects(author=self)
+    
+    @property
+    def comments(self):
+        return Comment.objects(author=self)
 
-
-class BlogPost(db.Model):
+class BlogPost(db.Document):
     __tablename__ = "blog_posts"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(
-        String(250), unique=True, nullable=False)
-    subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
-    date: Mapped[str] = mapped_column(String(250), nullable=False)
-    body: Mapped[str] = mapped_column(Text, nullable=False)
-    img_url: Mapped[str] = mapped_column(String(250), nullable=False)
+    id = db.StringField(primary_key=True, default=generate_short_id)
+    title = db.StringField(required=True, unique=True, max_length=250)
+    subtitle = db.StringField(required=True, max_length=250)
+    date = db.StringField(required=True, max_length=250)
+    body = db.StringField(required=True) # No need for Text, StringField holds anything
+    img_url = db.StringField(required=True, max_length=250)
 
     # author: Mapped[str] = mapped_column(String(250), nullable=False)
-    author_id: Mapped[int] = mapped_column(
-        Integer, db.ForeignKey("user_table.id"))
-    author = relationship("User", back_populates="posts")
-    comments = relationship("Comment", back_populates="posts")
+    # author_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("user_table.id"))
+    # author = relationship("User", back_populates="posts")
+    # comments = relationship("Comment", back_populates="posts")
+
+    # Relationship: Referenced Field replaces ForeignKey
+    # reverse_delete_rule=CASCADE means if User is deleted, delete their posts too.
+    author = db.ReferenceField(User, reverse_delete_rule=db.CASCADE)
+    
+    # Simulate relationship
+    @property
+    def comments(self):
+        return Comment.objects(parent_post=self)
+
+# Assuming User and BlogPost are already defined or imported
+
+class Comment(db.Document):
+    # 1. No __tablename__. MongoDB uses the class name (lowercased) by default.
+    #    If you want a specific name: meta = {'collection': 'comments'}
+    
+    # 2. Field Definitions
+    text = db.StringField(required=True, max_length=1000)
+
+    # 3. Relationships (Replacing ForeignKey & relationship)
+    # This stores the User's ID in the database, but allows you to access 
+    # comment.author.name in your code.
+    author = db.ReferenceField('User', reverse_delete_rule=db.CASCADE)
+    
+    # This links to the blog post
+    parent_post = db.ReferenceField('BlogPost', reverse_delete_rule=db.CASCADE)
 
 
-class Comment(db.Model):
-    __tablename__ = "comments"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    text: Mapped[str] = mapped_column(String(1000), nullable=False)
+class Message(db.Document):
+    # 1. No need to define 'id'. 
+    # MongoDB creates a unique '_id' automatically.
+    
+    name = db.StringField(required=True, max_length=100)
+    email = db.EmailField(required=True, max_length=100)
+    phone = db.StringField(max_length=100) # Optional field
+    text = db.StringField(required=True)    # No limit, like Text
+    
+    # 2. Better Date Handling
+    # In SQL you used String. In MongoDB, use DateTimeField for better sorting.
+    # default=datetime.utcnow handles the timestamp automatically.
+    date = db.DateTimeField(default=datetime.now())
+    
+    is_read = db.BooleanField(default=False)
 
-    author_id: Mapped[int] = mapped_column(
-        Integer, db.ForeignKey("user_table.id"))
-    parent_post: Mapped[int] = mapped_column(
-        Integer, db.ForeignKey("blog_posts.id"))
-
-    author = relationship("User", back_populates="comments")
-    posts = relationship("BlogPost", back_populates="comments")
-
-
-class Message(db.Model):
-    __tablename__ = "messages"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    email: Mapped[str] = mapped_column(String(100), nullable=False)
-    phone: Mapped[str] = mapped_column(String(100), nullable=True)
-    text: Mapped[str] = mapped_column(Text, nullable=False)
-    date: Mapped[str] = mapped_column(String(100), nullable=False)
-    is_read: Mapped[bool] = mapped_column(db.Boolean, default=False)
-
-
-with app.app_context():
-    db.create_all()
 
 
 """-----------------------------------AVATAR GEN----------------------------"""
-gravatar = Gravatar(app,
-                    size=100,
-                    rating='g',
-                    default='retro',
-                    force_default=False,
-                    force_lower=False,
-                    use_ssl=False,
-                    base_url=None)
+# doesnt work with flask>v3
+# gravatar = Gravatar(app,
+#                     size=100,
+#                     rating='g',
+#                     default='retro',
+#                     force_default=False,
+#                     force_lower=False,
+#                     use_ssl=False,
+#                     base_url=None)
+
+@app.template_filter('gravatar')
+def gravatar_url(email, size=100, default='identicon', rating='g'):
+    url = 'https://www.gravatar.com/avatar'
+    hash_value = hashlib.md5(email.lower().encode('utf-8')).hexdigest()
+    return f"{url}/{hash_value}?s={size}&d={default}&r={rating}"
 
 """-----------------------------------HELPER FUNCTION----------------------------"""
 
@@ -171,14 +197,14 @@ def admin_and_author_only(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         post_id = kwargs.get("post_id")
-        post = BlogPost.query.get_or_404(post_id)
+        post = BlogPost.objects.get_or_404(pk=post_id)
 
         # Admin can do anything
         if current_user.is_admin:
             return func(*args, **kwargs)
 
         # Author can edit/delete their own post
-        if current_user.is_author and post.author_id == current_user.id:
+        if current_user.is_author and post.author == current_user:
             return func(*args, **kwargs)
 
         abort(403, description="Not authorised.")
@@ -210,7 +236,7 @@ def admin_only(func):
     def wrapper(*args, **kwargs):
         if current_user.is_admin:
             return func(*args, **kwargs)
-        abort(403, description="Not authorised.")
+        abort(403, description="Not authorised. 😎")
     return wrapper
 
 
@@ -224,22 +250,17 @@ def register():
         try:
             # Use Werkzeug to hash the user's password when creating a new user.
             hashed_password = generate_password_hash(
-                request.form.get('password'), method='pbkdf2', salt_length=8)
+                request.form.get('password'), method='pbkdf2:sha256', salt_length=8)
             new_user = User(
                 name=request.form.get("name"),
                 email=request.form.get("email"),
                 password=hashed_password
             )
-            db.session.add(new_user)
-            db.session.commit()
+            new_user.save()
             login_user(new_user)
             return redirect(url_for('home'))
-        except IntegrityError:
-            db.session.rollback()
+        except NotUniqueError:
             flash("Email already exists. Please log in.", "danger")
-            login_form = LoginForm(
-                email=request.form.get('email')
-            )
             return redirect(url_for('login', email=form.email.data))
     return render_template("register.html", form=form)
 
@@ -253,18 +274,27 @@ def login():
     if form.validate_on_submit():
         email = request.form.get("email")
         password = request.form.get("password")
-        user = db.session.execute(
-            db.select(User).where(User.email == email)).scalar()
+        # user = db.session.execute(
+        #     db.select(User).where(User.email == email)).scalar()
+        user = User.objects(email=email).first()
 
         if not user:
             flash("Email does not exist. Try again.", "danger")
         elif not check_password_hash(user.password, password):
             flash("Incorrect password.", "danger")
         else:
+            if current_user.is_authenticated:   
+                print("user is logged in")
+            else:
+                print("not logged in")
             login_user(user)
+            if current_user.is_authenticated:   
+                print("user is logged in")
+            else:
+                print("not logged in")
+
             return redirect(url_for("home"))
     return render_template("login.html", form=form)
-
 
 @app.route('/logout')
 @login_required
@@ -274,8 +304,9 @@ def logout():
 
 @app.route('/')
 def home():
-    result = db.session.execute(db.select(BlogPost).order_by(BlogPost.id.desc()).limit(5))
-    posts = result.scalars().all()
+    # result = db.session.execute(db.select(BlogPost).order_by(BlogPost.id.desc()).limit(5))
+    result = BlogPost.objects.order_by('-id').limit(5)
+    posts = list(result)
     return render_template("index.html", all_posts=posts)
 
 @app.route('/all-posts')
@@ -286,18 +317,19 @@ def show_all_posts():
     
     # Select all posts, ordered by newest first (using ID)
     # db.paginate automatically handles the slicing
-    pagination = db.paginate(
-        db.select(BlogPost).order_by(BlogPost.id.desc()),
+    pagination = BlogPost.objects.paginate(
         page=page,
         per_page=per_page,
         error_out=False
     )
     
+    # db.select(BlogPost).order_by(BlogPost.id.desc())
+    
     return render_template("all-posts.html", pagination=pagination)
 
-@app.route("/post/<int:post_id>", methods=["GET", "POST"])
+@app.route("/post/<post_id>", methods=["GET", "POST"])
 def show_post(post_id):
-    requested_post = db.get_or_404(BlogPost, post_id)
+    requested_post = BlogPost.objects.get_or_404(pk=post_id)
     form = CommentForm()
     if form.validate_on_submit():
         if not current_user.is_authenticated:
@@ -311,10 +343,9 @@ def show_post(post_id):
         new_comment = Comment(
             text=clean_text,
             author=current_user,
-            posts=requested_post
+            parent_post=requested_post
         )
-        db.session.add(new_comment)
-        db.session.commit()
+        new_comment.save()
 
     return render_template("post.html", post=requested_post, form=form)
 
@@ -333,52 +364,44 @@ def add_new_post():
             author=current_user,
             date=date.today().strftime("%B %d, %Y")
         )
-        db.session.add(new_post)
-        db.session.commit()
+        new_post.save()
         return redirect(url_for("home"))
     return render_template("make-post.html", form=form)
 
 
-@app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
+@app.route("/edit-post/<post_id>", methods=["GET", "POST"])
 @login_required
 @admin_and_author_only
 def edit_post(post_id):
-    post = db.get_or_404(BlogPost, post_id)
-    edit_form = CreatePostForm(
-        title=post.title,
-        subtitle=post.subtitle,
-        img_url=post.img_url,
-        author=post.author,
-        body=post.body
-    )
+    post = BlogPost.objects.get_or_404(pk=post_id)
+    edit_form = CreatePostForm(obj=post)
     if edit_form.validate_on_submit():
         post.title = edit_form.title.data
         post.subtitle = edit_form.subtitle.data
         post.img_url = edit_form.img_url.data
-        post.author = current_user
         post.body = edit_form.body.data
-        db.session.commit()
+        post.save()
         return redirect(url_for("show_post", post_id=post.id))
     return render_template("make-post.html", form=edit_form, is_edit=True)
 
 
-@app.route("/delete/<int:post_id>")
+@app.route("/delete/<post_id>")
 @login_required
 @admin_and_author_only
 def delete_post(post_id):
-    post_to_delete = db.get_or_404(BlogPost, post_id)
-    db.session.delete(post_to_delete)
-    db.session.commit()
+    post_to_delete = BlogPost.objects.get_or_404(pk=post_id)
+    if post_to_delete.author != current_user:
+        abort(403, description="Not authorised.")
+
+    post_to_delete.delete()
     return redirect(url_for('home'))
 
 
 @app.route("/about")
 def about():
-    # Fetch all users where is_admin is True
-    result = db.session.execute(db.select(User).where(User.is_admin == True))
-    admins = result.scalars().all()
+    result = User.objects(is_admin=True)
+    admins = list(result)
     return render_template("about.html", admins=admins)
-
 
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
@@ -393,10 +416,9 @@ def contact():
             email=current_user.email,     # Auto-fill from logged-in user
             phone=request.form.get("phone"),
             text=request.form.get("message"),
-            date=datetime.now().strftime("%B %d, %Y, %H:%M")  # e.g. January 01, 2026, 12:00
+            date=datetime.now()  # e.g. January 01, 2026, 12:00
         )
-        db.session.add(new_message)
-        db.session.commit()
+        new_message.save()
 
         flash("Message sent! The admin will review it shortly.", "success")
         return redirect(url_for("contact"))
@@ -404,13 +426,10 @@ def contact():
     # 2. Handle GET request (Show the page)
     return render_template("contact.html")
 
-@app.route("/profile/<int:user_id>")
+@app.route("/profile/<user_id>")
 def profile(user_id):
-    user = db.get_or_404(User, user_id)
-    
+    user = User.objects.get_or_404(pk=user_id)
     return render_template("profile.html", user=user)
-
-
 
 @app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
@@ -422,9 +441,9 @@ def edit_profile():
         current_user.bio = form.bio.data
         current_user.linkedin_url = form.linkedin_url.data
         current_user.github_url = form.github_url.data
-        db.session.commit()
+        current_user.save()
         flash("Profile updated successfully!", "success")
-        return redirect(url_for('profile', user_id=current_user.id))
+        return redirect(url_for('profile', user_id=current_user.pk))
     else:
         flash("Enter valid URL!", "unsuccessful")
         pass
@@ -434,10 +453,9 @@ def edit_profile():
 @login_required
 @admin_only
 def admin_dashboard():
-    posts = db.session.execute(db.select(BlogPost)).scalars().all()
-    users = db.session.execute(db.select(User)).scalars().all()
-    admins = db.session.execute(db.select(User).where(
-        User.is_admin == True)).scalars().all()
+    posts = list(BlogPost.objects())
+    users = list(User.objects())
+    admins = list(User.objects(is_admin=True))
     return render_template(
         "admin.html",
         posts=posts,
@@ -446,7 +464,6 @@ def admin_dashboard():
         total_posts=len(posts),
         total_users=len(users)
     )
-
 
 """-----------------------------------ERROR HANDLER----------------------------"""
 
@@ -457,4 +474,4 @@ def page_not_found(e):
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
