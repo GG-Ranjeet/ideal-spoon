@@ -8,6 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from forms import CreatePostForm, LoginForm, RegisterForm, CommentForm, EditProfileForm, ContactForm
 import os
 import bleach
+import certifi
 from datetime import datetime
 from dotenv import load_dotenv
 from flask_mongoengine import MongoEngine
@@ -47,7 +48,8 @@ def load_user(user_id):
 
 
 app.config['MONGODB_SETTINGS'] = {
-    'host': os.environ.get("MONGO_URI")
+    'host': os.environ.get("MONGO_URI"),
+    'tlsCAFile': certifi.where()
 }
 db = MongoEngine(app)
 

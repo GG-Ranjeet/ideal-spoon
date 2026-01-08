@@ -18,6 +18,7 @@ bleach
 python-dotenv
 click==8.1.7
 colorama==0.4.6
+certifi
 
 # --- Production Server ---
 gunicorn==21.2.0
