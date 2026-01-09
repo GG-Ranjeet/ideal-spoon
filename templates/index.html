@@ -89,7 +89,7 @@
                                     </div>
                                     <div class="small text-muted lh-1">
                                         <a href="{{ url_for('profile', user_id=post.author.id) }}" class="fw-bold text-dark d-block">{{ post.author.name }}</a>
-                                        <span style="font-size: 0.8em;">{{ post.date }}</span>
+                                        <span style="font-size: 0.8em;">{{ post.date.strftime("%B %d, %Y") }}</span>
                                     </div>
                                 </div>
 

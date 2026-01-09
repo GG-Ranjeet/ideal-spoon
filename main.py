@@ -97,7 +97,7 @@ class User(UserMixin, db.Document):
 class BlogPost(db.Document):
     title = db.StringField(required=True, unique=True, max_length=250)
     subtitle = db.StringField(required=True, max_length=250)
-    date = db.StringField(required=True, max_length=250)
+    date = db.DateTimeField(default=datetime.now())
     body = db.StringField(required=True) # No need for Text, StringField holds anything
     img_url = db.StringField(required=True, max_length=250)
 
@@ -347,7 +347,8 @@ def add_new_post():
             body=form.body.data,
             img_url=form.img_url.data,
             author=current_user,
-            date=date.today().strftime("%B %d, %Y")
+            date=datetime.now()
+            # .strftime("%B %d, %Y")
         )
         new_post.save()
         return redirect(url_for("home"))
