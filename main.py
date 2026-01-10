@@ -242,7 +242,7 @@ def register():
                 password=hashed_password
             )
             new_user.save()
-            login_user(new_user)
+            login_user(new_user, remember=True)
             return redirect(url_for('home'))
         except NotUniqueError:
             flash("Email already exists. Please log in.", "danger")
@@ -259,8 +259,6 @@ def login():
     if form.validate_on_submit():
         email = request.form.get("email")
         password = request.form.get("password")
-        # user = db.session.execute(
-        #     db.select(User).where(User.email == email)).scalar()
         user = User.objects(email=email).first()
 
         if not user:
@@ -268,16 +266,7 @@ def login():
         elif not check_password_hash(user.password, password):
             flash("Incorrect password.", "danger")
         else:
-            if current_user.is_authenticated:   
-                print("user is logged in")
-            else:
-                print("not logged in")
-            login_user(user)
-            if current_user.is_authenticated:   
-                print("user is logged in")
-            else:
-                print("not logged in")
-
+            login_user(user, remember=True)
             return redirect(url_for("home"))
     return render_template("login.html", form=form)
 
