@@ -39,22 +39,22 @@
                 <!-- list of navbar items  -->
                 <ul class="navbar-nav ms-auto py-4 py-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('home') }}">Home</a>
+                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('main.home') }}">Home</a>
                     </li>
                     <!-- TODO: Only show Login/Register if user is logged out. Otherwise show "Log Out" -->
                     {% if not current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('login') }}">Login</a>
+                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('auth.login') }}">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('register') }}">Register</a>
+                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('auth.register') }}">Register</a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('about') }}">About Us</a>
+                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('other.about') }}">About Us</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('contact') }}">Contact</a>
+                        <a class="nav-link px-lg-3 py-3 py-lg-4" href="{{ url_for('other.contact') }}">Contact</a>
                     </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
@@ -66,14 +66,14 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('profile', user_id=current_user.pk) }}">
+                                <a class="dropdown-item" href="{{ url_for('other.profile', user_id=current_user.pk) }}">
                                     👤 Profile
                                 </a>
                             </li>
 
                             {% if current_user.is_admin %}
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">
+                                <a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">
                                     🛠 Admin Panel
                                 </a>
                             </li>
@@ -84,7 +84,7 @@
                             </li>
 
                             <li>
-                                <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
                                     🚪 Logout
                                 </a>
                             </li>

@@ -52,7 +52,7 @@
     {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_author) %}
     <div class="row mb-4">
         <div class="col-12 text-end">
-            <a class="btn btn-dark rounded-pill px-4" href="{{ url_for('add_new_post') }}">
+            <a class="btn btn-dark rounded-pill px-4" href="{{ url_for('post.add_new_post') }}">
                 <i class="fas fa-plus me-2"></i>Create New Post
             </a>
         </div>
@@ -68,7 +68,7 @@
                     
                     <div class="col-md-7 p-4 d-flex flex-column justify-content-center">
                         <div class="card-body p-0">
-                            <a href="{{ url_for('show_post', post_id=post.id) }}" class="text-decoration-none text-dark">
+                            <a href="{{ url_for('post.show_post', post_id=post.id) }}" class="text-decoration-none text-dark">
                                 <h2 class="card-title fw-bold mb-2 h3">{{ post.title }}</h2>
                                 <h5 class="card-subtitle text-muted fw-light mb-3 h6">{{ post.subtitle }}</h5>
                             </a>
@@ -80,7 +80,7 @@
                             <div class="d-flex justify-content-between align-items-center mt-auto">
                                 <div class="d-flex align-items-center">
                                     <div class="author-avatar">
-                                        <a href="{{ url_for('profile', user_id=post.author.id) }}">
+                                        <a href="{{ url_for('other.profile', user_id=post.author.id) }}">
 
                                             <img src="{{ post.author.email | gravatar(size=40) }}" alt="Profile" class="rounded-circle"
                                     width="36" height="36" />
@@ -88,13 +88,13 @@
 
                                     </div>
                                     <div class="small text-muted lh-1">
-                                        <a href="{{ url_for('profile', user_id=post.author.id) }}" class="fw-bold text-dark d-block">{{ post.author.name }}</a>
-                                        <span style="font-size: 0.8em;">{{ post.date }}</span>
+                                        <a href="{{ url_for('other.profile', user_id=post.author.id) }}" class="fw-bold text-dark d-block">{{ post.author.name }}</a>
+                                        <span style="font-size: 0.8em;">{{ post.date.strftime('%B %d, %Y') }}</span>
                                     </div>
                                 </div>
 
                                 {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
-                                <a href="{{ url_for('delete_post', post_id=post.id) }}" 
+                                <a href="{{ url_for('post.delete_post', post_id=post.id) }}" 
                                    class="btn btn-outline-danger btn-sm border-0"
                                    data-bs-toggle="tooltip" 
                                    title="Delete Post"
@@ -108,7 +108,7 @@
 
                     <div class="col-md-5 post-img-container d-none d-md-block" 
                          style="background-image: url('{{ post.img_url }}');">
-                         <a href="{{ url_for('show_post', post_id=post.id) }}" class="d-block h-100 w-100"></a>
+                         <a href="{{ url_for('post.show_post', post_id=post.id) }}" class="d-block h-100 w-100"></a>
                     </div>
                     
                     <div class="col-12 d-md-none">
@@ -128,7 +128,7 @@
             {% endfor %}
 
             <div class="d-flex justify-content-end mb-4">
-                <a class="btn btn-outline-secondary text-uppercase rounded-pill px-4" href="{{ url_for('show_all_posts') }}">Older Posts &rarr;</a>
+                <a class="btn btn-outline-secondary text-uppercase rounded-pill px-4" href="{{ url_for('post.show_all_posts') }}">Older Posts &rarr;</a>
             </div>
         </div>
     </div>

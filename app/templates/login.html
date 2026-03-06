@@ -38,7 +38,7 @@
             </div>
             <div class="card-body p-4">
                 
-                <form method="POST" action="{{ url_for('login') }}" novalidate>
+                <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
                     {{ form.hidden_tag() }} <div class="form-floating mb-3">
                         {{ form.email(class="form-control", id="email", placeholder="name@example.com") }}
                         <label for="email">Email address</label>
@@ -63,7 +63,7 @@
             
             <div class="card-footer text-center py-3 bg-light border-0 rounded-bottom">
                 <div class="small">
-                    <a href="{{ url_for('register') }}" class="text-decoration-none">Need an account? Sign up!</a>
+                    <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Need an account? Sign up!</a>
                 </div>
             </div>
         </div>

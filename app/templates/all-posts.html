@@ -42,11 +42,11 @@
                 <div class="list-group list-group-flush">
                     {% for post in pagination.items %}
 
-                    <a href="{{ url_for('show_post', post_id=post.id) }}"
+                    <a href="{{ url_for('post.show_post', post_id=post.id) }}"
                         class="list-group-item list-group-item-action py-4 border-0 post-archive-card">
                         <div class="d-flex w-100 justify-content-between">
                             <h2 class="mb-1 h4 fw-bold text-dark">{{ post.title }}</h2>
-                            <small class="text-muted text-nowrap ms-3">{{ post.date }}</small>
+                            <small class="text-muted text-nowrap ms-3">{{ post.date.strftime('%B %d, %Y') }}</small>
                         </div>
                         <h3 class="h6 fw-normal text-muted mb-2">{{ post.subtitle }}</h3>
                         <div class="d-flex align-items-center mt-3">
@@ -68,7 +68,7 @@
 
                     <div>
                         {% if pagination.has_prev %}
-                        <a href="{{ url_for('show_all_posts', page=pagination.prev_num) }}"
+                        <a href="{{ url_for('post.show_all_posts', page=pagination.prev_num) }}"
                             class="btn btn-primary text-uppercase pagination-btn">
                             &larr; Newer Posts
                         </a>
@@ -83,7 +83,7 @@
                         left_current=1, right_current=2) %}
                         {% if page_num %}
                         {% if page_num == pagination.page %}
-                        <a href="{{ url_for('show_all_posts', page=page_num) }}" class="btn btn-primary btn-md fw-bold" style="padding: 0.7rem 1rem;
+                        <a href="{{ url_for('post.show_all_posts', page=page_num) }}" class="btn btn-primary btn-md fw-bold" style="padding: 0.7rem 1rem;
                             font-size: 0.92rem;   
                             line-height: 1.5;
                             border-radius: 0.25rem;"
@@ -91,7 +91,7 @@
                             {{ page_num }}
                         </a>
                         {% else %}
-                        <a href="{{ url_for('show_all_posts', page=page_num) }}" class="btn btn-outline-dark btn-sm" style="padding: 0.7rem 1rem;
+                        <a href="{{ url_for('post.show_all_posts', page=page_num) }}" class="btn btn-outline-dark btn-sm" style="padding: 0.7rem 1rem;
                             font-size: 0.92rem;   
                             line-height: 1.5;
                             border-radius: 0.25rem;"
@@ -107,7 +107,7 @@
 
                     <div>
                         {% if pagination.has_next %}
-                        <a href="{{ url_for('show_all_posts', page=pagination.next_num) }}"
+                        <a href="{{ url_for('post.show_all_posts', page=pagination.next_num) }}"
                             class="btn btn-primary text-uppercase pagination-btn">
                             Older Posts &rarr;
                         </a>

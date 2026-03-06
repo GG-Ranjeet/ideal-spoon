@@ -90,13 +90,13 @@
           <div class="mt-4 d-flex justify-content-center gap-2">
 
             {% if current_user.id == user.id %}
-              <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm">
+              <a href="{{ url_for('other.edit_profile') }}" class="btn btn-outline-primary btn-sm">
                 Edit Profile
               </a>
             {% endif %}
 
             {% if current_user.is_admin %}
-              <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+              <a href="{{ url_for('other.admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
                 Back to Admin
               </a>
             {% endif %}

@@ -88,13 +88,13 @@
 
                         <div class="d-flex justify-content-center gap-2 border-top pt-4">
                             {% if current_user.is_authenticated and current_user.id == user.id %}
-                                <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary rounded-pill px-4">
+                                <a href="{{ url_for('other.edit_profile') }}" class="btn btn-outline-primary rounded-pill px-4">
                                     <i class="fas fa-pencil-alt me-1"></i> Edit Profile
                                 </a>
                             {% endif %}
 
                             {% if current_user.is_admin %}
-                                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-dark rounded-pill px-4">
+                                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-dark rounded-pill px-4">
                                     Admin Panel
                                 </a>
                             {% endif %}
@@ -107,11 +107,11 @@
                 <h4 class="mb-4 mt-5 fw-bold text-secondary">Recent Posts by {{ user.name }}</h4>
                 <div class="list-group shadow-sm">
                     {% for post in user.posts %}
-                    <a href="{{ url_for('show_post', post_id=post.id) }}" class="list-group-item list-group-item-action p-3 d-flex align-items-center border-0 border-bottom">
+                    <a href="{{ url_for('post.show_post', post_id=post.id) }}" class="list-group-item list-group-item-action p-3 d-flex align-items-center border-0 border-bottom">
                         <div style="width: 50px; height: 50px; background-image: url('{{ post.img_url }}'); background-size: cover; border-radius: 8px;" class="me-3"></div>
                         <div>
                             <h6 class="mb-0 fw-bold">{{ post.title }}</h6>
-                            <small class="text-muted">{{ post.date }}</small>
+                            <small class="text-muted">{{ post.date.strftime('%B %d, %Y') }}</small>
                         </div>
                     </a>
                     {% endfor %}

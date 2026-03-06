@@ -30,7 +30,7 @@
         <div class="card shadow-lg border-0 rounded-lg">
           <div class="card-body p-5">
 
-            <form action="{{ url_for('contact') }}" method="POST">
+            <form action="{{ url_for('other.contact') }}" method="POST">
 
               <div class="form-floating mb-3">
                 <input type="text" class="form-control bg-light" value="{{ current_user.name }}" readonly>
@@ -68,8 +68,8 @@
           <p class="text-muted mb-4">You must be logged in to send a message to the admin.</p>
 
           <div class="d-flex justify-content-center gap-3">
-            <a href="{{ url_for('login') }}" class="btn btn-outline-primary rounded-pill px-4">Log In</a>
-            <a href="{{ url_for('register') }}" class="btn btn-primary rounded-pill px-4">Register</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary rounded-pill px-4">Log In</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary rounded-pill px-4">Register</a>
           </div>
         </div>
 
