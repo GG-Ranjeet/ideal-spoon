@@ -51,28 +51,32 @@ ideal-spoon-with-mongodb/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/ideal-spoon-with-mongodb.git
-cd ideal-spoon-with-mongodb
+git clone https://github.com/GG-Ranjeet/ideal-spoon.git
+cd ideal-spoon
 ```
 
 ### 2. Create a virtual environment
 
 ```bash
-python -m venv venv
+python -m venv .venv
 ```
 
 Activate it:
 
 **Windows**
-
+for cmd
 ```
-venv\Scripts\activate
+.venv\Scripts\activate
+```
+for powershell
+```
+.venv\Scripts\Activate.ps1
 ```
 
 **Linux / Mac**
 
 ```
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
 ### 3. Install dependencies
@@ -88,6 +92,7 @@ Update the MongoDB connection string inside:
 ```
 config.py
 ```
+or use the .env file with required uri I used in this config
 
 Example:
 
@@ -128,3 +133,4 @@ This structure makes the project easier to maintain and extend with additional f
 ## License
 
 This project is open source and available under the MIT License.
+
