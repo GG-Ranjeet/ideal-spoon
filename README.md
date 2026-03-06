@@ -2,6 +2,10 @@
 
 A Flask web application demonstrating the transition from a **single-file handler architecture** to a **modular and scalable Flask project structure** using **MongoDB with MongoEngine**.
 
+## Preview
+check the preview of my site on this link. It takes few seconds to load since its a free tier of hosting and spin down after 50 seconds of inactivity
+https://blog-of-gg.onrender.com
+
 ## Overview
 
 This project was originally implemented as a **small Flask application with all logic inside a single handler file**. As the project grew, it was refactored into a **structured architecture using the Application Factory pattern and Flask Blueprints** to improve maintainability, scalability, and code organization.
@@ -133,4 +137,5 @@ This structure makes the project easier to maintain and extend with additional f
 ## License
 
 This project is open source and available under the MIT License.
+
 
