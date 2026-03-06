@@ -92,14 +92,14 @@
                     </a>
                     {% endif %}
                     
-                    <a href="{{ url_for('profile', user_id=admin.id) }}" class="social-link" title="View Profile">
+                    <a href="{{ url_for('other.profile', user_id=admin.id) }}" class="social-link" title="View Profile">
                         <i class="fas fa-user"></i>
                     </a>
                 </div>
 
                 {% if current_user.is_authenticated and current_user.id == admin.id %}
                     <div class="mt-3">
-                        <a href="{{ url_for('edit_profile') }}" class="btn btn-sm btn-outline-secondary">Edit My Info</a>
+                        <a href="{{ url_for('other.edit_profile') }}" class="btn btn-sm btn-outline-secondary">Edit My Info</a>
                     </div>
                 {% endif %}
 
