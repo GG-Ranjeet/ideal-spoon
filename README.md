@@ -1,4 +1,4 @@
-# Ideal Spoon with MongoDB
+# Blog website powered with python(flask) and MongoDB
 
 A Flask web application demonstrating the transition from a **single-file handler architecture** to a **modular and scalable Flask project structure** using **MongoDB with MongoEngine**.
 
@@ -55,8 +55,8 @@ ideal-spoon-with-mongodb/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/GG-Ranjeet/ideal-spoon.git
-cd ideal-spoon
+git clone https://github.com/GG-Ranjeet/Blogging-Website-Between-Semester.git
+cd Blogging-Website-Between-Semester
 ```
 
 ### 2. Create a virtual environment
@@ -137,5 +137,6 @@ This structure makes the project easier to maintain and extend with additional f
 ## License
 
 This project is open source and available under the MIT License.
+
 
 
