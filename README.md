@@ -106,6 +106,12 @@ MONGODB_SETTINGS = {
 }
 ```
 
+```.env
+MONGO_URI='mongodb+srv://mongodb:ahgS0eUUrkUh2RKo@clustergg.jdxkxws.mongodb.net/myBlog?appName=ClusterGG'
+FLASK_KEY='THIS_IS_MY_TEST_TOKEN'
+DEBUGING='True'
+```
+
 ### 5. Run the application
 
 ```bash
