@@ -107,7 +107,7 @@ MONGODB_SETTINGS = {
 ```
 
 ```.env
-MONGO_URI='mongodb+srv://mongodb:ahgS0eUUrkUh2RKo@clustergg.jdxkxws.mongodb.net/myBlog?appName=ClusterGG'
+MONGO_URI='your_mongo_uri'
 FLASK_KEY='THIS_IS_MY_TEST_TOKEN'
 DEBUGING='True'
 ```
