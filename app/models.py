@@ -4,6 +4,7 @@ from datetime import datetime
 
 class User(UserMixin, db.Document):
     __tablename__ = "users"
+    meta = {'collection': 'users'}  # Optional: specify collection name explicitly
     # 1. Basic Fields
     name = db.StringField(required=True, max_length=100)
     email = db.EmailField(required=True, unique=True)
